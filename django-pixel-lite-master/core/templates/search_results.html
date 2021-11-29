@@ -1,0 +1,27 @@
+{% extends "layouts/base.html" %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main>
+        
+<!--        {% include 'includes/preloader.html' %}-->
+
+        <!-- Hero -->
+        <section class="section-header">
+            <div class="container">
+                <h1>Publications Results</h1>
+                {% include 'publications_results_table.html' %}
+            </div>
+        </section>
+
+    </main>
+
+<!--    {% include 'includes/footer.html' %}-->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

@@ -1,0 +1,105 @@
+{% extends "layouts/base.html" %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+    <link type="text/css" href="/static/assets/css/sidebar.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+    <main>
+        
+<!--        {% include 'includes/preloader.html' %}-->
+
+        <!-- Hero -->
+        <section>
+            <div>
+                {% for taxonomy in taxonomies %}
+                    {% include 'ai_domain_taxonomies.html' with taxonomy=taxonomy %}
+                {% endfor %}
+            </div>
+        </section>
+        <section class="section-header">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-md-8 text-center">
+                            <h1 class="display-2 mb-3">Conceptual Modeling & AI </h1>
+                            <h4>Web knowledge base of the survey</h4>
+                            <div class="mb-3">
+                                <label for="exampleInputIconRight"></label>
+                                <form action="{% url 'search_results' %}" method="post">
+                                        {% csrf_token %}
+                                <div class="input-group">
+                                    <input type="text" name='search-box' class="form-control" id="exampleInputIconRight" placeholder="Search"
+                                        aria-label="Search" aria-describedby="basic-addon2">
+                                    <span class="input-group-text" id="basic-addon2"><span class="fas fa-search"></span></span>
+                                </div>
+                                </form>
+                            </div>
+                            <div>
+                                {% for search_type in search_types %}
+                                    {% include 'search_types.html' with search_type=search_type %}
+                                {% endfor %}
+                                <div>
+                                    <fieldset>
+                                        <input class="form-check-input" type="radio" name="logicalOperation" id="logicalAND"
+                                            value="option1" checked>
+                                        <label class="form-check-label" for="logicalAND">
+                                            AND
+                                        </label>
+
+                                        <input class="form-check-input" type="radio" name="logicalOperation" id="logicalOR"
+                                            value="option2">
+                                        <label class="form-check-label" for="logicalOR">
+                                            OR
+                                        </label>
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <!-- Form -->
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <label class="h6" for="exampleInputDate2"></label>
+                                    <div class="form-group">
+                                        <div class="input-group input-group-border">
+                                            <span class="input-group-text" id="basic-addonDate2"><span
+                                                    class="fas far fa-calendar-alt"></span></span>
+                                            <input name='start-date' class="form-control" data-datepicker="" id="exampleInputDate2"
+                                                placeholder="Start date" type="text">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label class="h6" for="exampleInputDate3"></label>
+                                        <div class="input-group input-group-border">
+                                            <span class="input-group-text" id="basic-addonDate3"><span
+                                                    class="fas far fa-calendar-alt"></span></span>
+                                            <input name='end-date' class="form-control" data-datepicker="" id="exampleInputDate3"
+                                                placeholder="End date" type="text">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </section>
+    </main>
+
+<!--    {% include 'includes/footer.html' %}-->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+<script>
+    var button = document.getElementsById("search-type");
+
+    button.addEventListener("click", function(e) {
+    this.classList.toggle("is-active");
+});
+</script>
+{% block javascripts %}
+{% endblock javascripts %}
+

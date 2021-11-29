@@ -1,0 +1,26 @@
+<div class="section section-md">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-12">
+                        <div class="mb-5">
+                            <table class="table">
+                                <tr>
+                                    <th scope="col" id="class">Publication Title</th>
+                                    <th scope="col" id="teacher">Authors</th>
+                                    <th scope="col" id="males">Year</th>
+                                    <th scope="col" id="females">DOI</th>
+                                </tr>
+                                {% for publication in publications %}
+                                <tr>
+                                    <td scope="col" id="pubName">{{publication.name}}</td>
+                                    <td scope="col" id="pubAuthors">{{publication.authors}}</td>
+                                    <td scope="col" id="pubYear">{{publication.year}}</td>
+                                    <td scope="col" id="pubDOI">{{publication.doi}}</td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+</div>
