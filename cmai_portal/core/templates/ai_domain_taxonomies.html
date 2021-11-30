@@ -5,10 +5,9 @@
     {% for value in taxonomy.values %}
         <li>
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="{{taxonomy.name}}"
-                       value="{{ value }}" id="defaultCheck1">
-                <label class="form-check-label" for="defaultCheck1">
-                    {{value}}
+                <input class="form-check-input" type="checkbox" name="{{taxonomy.name}}: {{value.label}}" id="{{value}}">
+                <label class="form-check-label" for="{{value}}">
+                    {{value.label}}
                 </label>
             </div>
         </li>
@@ -24,13 +23,13 @@
     </li>
     <li>
         <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="LogicalIntra">
+            <input name="LogicalIntra" class="form-check-input" type="checkbox" id="LogicalIntra">
             <label class="form-check-label" for="LogicalIntra">AND/OR results of selected values</label>
         </div>
     </li>
     <li>
         <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="LogicalInter">
+            <input name="LogicalInter" class="form-check-input" type="checkbox" id="LogicalInter">
             <label class="form-check-label" for="LogicalInter">AND/OR results with other taxonomies</label>
         </div>
     </li>

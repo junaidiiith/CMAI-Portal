@@ -50,7 +50,11 @@ def get_taxonomies():
     cmai_data['Modelling Language'] = cmai_data['Modelling Language'].apply(
         lambda x: ", ".join(list(map(f, x.split(',')))) if not isinstance(x, float) else "Others")
 
-    taxonomies = list()
-    for column in columns:
-        taxonomies.append({'name': column, 'values': list(get_list(cmai_data[column])[1].keys())})
+    taxonomies = {"AI Filters": list(), "CM Filters": list(), "Others": list()}
+    for column in columns[:4]:
+        taxonomies['AI Filters'].append({'name': column, 'values': list(get_list(cmai_data[column])[1].keys())})
+    for column in columns[4:6]:
+        taxonomies['CM Filters'].append({'name': column, 'values': list(get_list(cmai_data[column])[1].keys())})
+    for column in columns[6:]:
+        taxonomies['Others'].append({'name': column, 'values': list(get_list(cmai_data[column])[1].keys())})
     return taxonomies

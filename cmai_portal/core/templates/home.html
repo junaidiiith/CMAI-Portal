@@ -2,7 +2,6 @@
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-    <link type="text/css" href="/static/assets/css/sidebar.css" rel="stylesheet">
 {% endblock stylesheets %}
 
 {% block content %}
@@ -11,81 +10,96 @@
 <!--        {% include 'includes/preloader.html' %}-->
 
         <!-- Hero -->
-        <section>
-            <div>
-                {% for taxonomy in taxonomies %}
-                    {% include 'ai_domain_taxonomies.html' with taxonomy=taxonomy %}
-                {% endfor %}
-            </div>
-        </section>
-        <section class="section-header">
+        <form action="{% url 'search_results' %}" method="post" enctype='multipart/form-data'>
+            {% csrf_token %}
+            <section>
                 <div class="container">
                     <div class="row justify-content-center">
-                        <div class="col-12 col-md-8 text-center">
-                            <h1 class="display-2 mb-3">Conceptual Modeling & AI </h1>
-                            <h4>Web knowledge base of the survey</h4>
-                            <div class="mb-3">
-                                <label for="exampleInputIconRight"></label>
-                                <form action="{% url 'search_results' %}" method="post">
-                                        {% csrf_token %}
-                                <div class="input-group">
-                                    <input type="text" name='search-box' class="form-control" id="exampleInputIconRight" placeholder="Search"
-                                        aria-label="Search" aria-describedby="basic-addon2">
-                                    <span class="input-group-text" id="basic-addon2"><span class="fas fa-search"></span></span>
+                        <div class="col-10">
+                            {% for taxonomy in form.ai_taxonomies %}
+                                {% include 'ai_domain_taxonomies.html' with taxonomy=taxonomy %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-9">
+                            {% for taxonomy in form.cm_taxonomies %}
+                                {% include 'ai_domain_taxonomies.html' with taxonomy=taxonomy %}
+                            {% endfor %}
+                            {% for taxonomy in form.others %}
+                                {% include 'ai_domain_taxonomies.html' with taxonomy=taxonomy %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="section-header">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-md-8 text-center">
+                                <h1 class="display-2 mb-3">Conceptual Modeling & AI </h1>
+                                <h4>Web knowledge base of the survey</h4>
+                                <div class="mb-3">
+                                    <label for="{{form.search}}"></label>
+                                    <div class="input-group">
+                                        <input id="{{form.search}}" type="text" name='search-box' class="form-control"
+                                               placeholder="Search" aria-label="Search" aria-describedby="basic-addon2">
+                                        <span class="input-group-text" id="basic-addon2"><span class="fas fa-search"></span></span>
+                                    </div>
                                 </div>
-                                </form>
-                            </div>
-                            <div>
-                                {% for search_type in search_types %}
+                                {% for search_type in form.search_types %}
                                     {% include 'search_types.html' with search_type=search_type %}
                                 {% endfor %}
                                 <div>
-                                    <fieldset>
-                                        <input class="form-check-input" type="radio" name="logicalOperation" id="logicalAND"
-                                            value="option1" checked>
-                                        <label class="form-check-label" for="logicalAND">
-                                            AND
-                                        </label>
-
-                                        <input class="form-check-input" type="radio" name="logicalOperation" id="logicalOR"
-                                            value="option2">
-                                        <label class="form-check-label" for="logicalOR">
-                                            OR
-                                        </label>
-                                    </fieldset>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-8">
-                            <!-- Form -->
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <label class="h6" for="exampleInputDate2"></label>
-                                    <div class="form-group">
-                                        <div class="input-group input-group-border">
-                                            <span class="input-group-text" id="basic-addonDate2"><span
-                                                    class="fas far fa-calendar-alt"></span></span>
-                                            <input name='start-date' class="form-control" data-datepicker="" id="exampleInputDate2"
-                                                placeholder="Start date" type="text">
-                                        </div>
+                                    <div>
+                                        <fieldset>
+                                            {% for choice in form.search_type_logical %}
+                                                <input id="{{choice.choice_label}}" class="form-check-input"
+                                                       type="radio" value="{{choice.choice_label}}" name="logicalOperation" checked>
+                                                <label class="form-check-label" for="{{choice.choice_label}}">
+                                                    {{choice.tag}}
+                                                </label>
+                                            {% endfor %}
+                                        </fieldset>
                                     </div>
                                 </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label class="h6" for="exampleInputDate3"></label>
-                                        <div class="input-group input-group-border">
-                                            <span class="input-group-text" id="basic-addonDate3"><span
-                                                    class="fas far fa-calendar-alt"></span></span>
-                                            <input name='end-date' class="form-control" data-datepicker="" id="exampleInputDate3"
-                                                placeholder="End date" type="text">
+                                <div class="container">
+                                    <div class="row align-items-start">
+                                        <div class="col">
+                                            <select name="start-year" class="form-select" id="start-year" aria-label="Default select example">
+                                                <option selected>Start Year</option>
+                                                {% for year in form.start_year %}
+                                                    <option value="{{year.choice_label}}">{{year.choice_label}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col">
+                                            <select name="end-year" class="form-select" id="end-year" aria-label="Default select example">
+                                                <option selected>End Year</option>
+                                                {% for year in form.end_year %}
+                                                    <option value="{{year.choice_label}}">{{year.choice_label}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col">
+                                            <div class="mb-3">
+                                                <select name="country" class="form-select" id="inlineFormCustomSelectPref" aria-label="Default select example">
+                                                    <option selected>Country</option>
+                                                    {% for country in form.country %}
+                                                        <option value="{{country.choice_label}}">{{country.choice_label}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-        </section>
+            </section>
+        </form>
     </main>
 
 <!--    {% include 'includes/footer.html' %}-->

@@ -2,7 +2,6 @@
 """
 Copyright (c) 2019 - present AppSeed.us
 """
-import pandas as pd
 from django import template
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
@@ -10,6 +9,7 @@ from django.template import loader
 from django.urls import reverse
 from apps.app.cmai_taxonomies import get_taxonomies
 from apps.app.searchapi import *
+from apps.app.forms import CompleteForm
 
 
 @login_required(login_url="/login/")
@@ -44,7 +44,8 @@ def index(request):
 
     search_types = ["Publications", "Authors", "Conferences", "Journals", "Institutions"]
     taxonomies = get_taxonomies()
-    context = {'segment': 'index', 'taxonomies': taxonomies, "search_types": search_types}
+    form = CompleteForm(taxonomies, search_types)
+    context = {'segment': 'index', 'form': form, "search_types": search_types}
 
     html_template = loader.get_template('home.html')
     return HttpResponse(html_template.render(context, request))
@@ -56,7 +57,6 @@ def pages(request):
     # All resource paths end in .html.
     # Pick out the html file name from the url. And load that template.
     try:
-
         load_template = request.path.split('/')[-1]
 
         if load_template == 'admin':
