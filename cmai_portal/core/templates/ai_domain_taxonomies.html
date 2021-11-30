@@ -5,7 +5,7 @@
     {% for value in taxonomy.values %}
         <li>
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="{{taxonomy.name}}: {{value.label}}" id="{{value}}">
+                <input class="form-check-input" type="checkbox" name="{{taxonomy.name}}:{{value.label}}" id="{{value}}">
                 <label class="form-check-label" for="{{value}}">
                     {{value.label}}
                 </label>
@@ -14,7 +14,7 @@
     {% endfor %}
     <li>
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="selectAll" value="selectAll" id="selectAll"
+            <input class="form-check-input" type="checkbox" name="all_{{taxonomy.name}}" id="selectAll"
                    onClick="toggle(this, '{{taxonomy.name}}')">
             <label class="form-check-label" for="selectAll">
                 Select All
@@ -23,13 +23,13 @@
     </li>
     <li>
         <div class="form-check form-switch">
-            <input name="LogicalIntra" class="form-check-input" type="checkbox" id="LogicalIntra">
+            <input class="form-check-input" type="checkbox" id="LogicalIntra">
             <label class="form-check-label" for="LogicalIntra">AND/OR results of selected values</label>
         </div>
     </li>
     <li>
         <div class="form-check form-switch">
-            <input name="LogicalInter" class="form-check-input" type="checkbox" id="LogicalInter">
+            <input class="form-check-input" type="checkbox" id="LogicalInter">
             <label class="form-check-label" for="LogicalInter">AND/OR results with other taxonomies</label>
         </div>
     </li>
@@ -40,7 +40,7 @@
 
 <script language="JavaScript">
 function toggle(source, taxonomyName) {
-  checkboxes = document.getElementsByName(taxonomyName);
+  checkboxes = document.querySelectorAll('input[name^="'+ taxonomyName +'"]');
   for(var i=0, n=checkboxes.length;i<n;i++) {
     checkboxes[i].checked = source.checked;
   }
