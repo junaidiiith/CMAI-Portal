@@ -13,6 +13,8 @@ class Taxonomy(forms.Form):
         super(Taxonomy, self).__init__()
         self.name = name
         self.values = [forms.BooleanField(label=value) for value in values]
+        self.operator = forms.BooleanField(label="results_merge_type")
+        self.id = "".join(self.name.split())
 
 
 class CompleteForm(forms.Form):
@@ -27,7 +29,7 @@ class CompleteForm(forms.Form):
         self.search_types = [forms.BooleanField(label=search_type) for search_type in search_types]
 
     search = forms.TextInput()
-    search_type_logical = forms.ChoiceField(label="searchLogicalOperator", choices=logical_operators)
     start_year = forms.ChoiceField(label="search_start_date", choices=years)
     end_year = forms.ChoiceField(label="search_end_date", choices=years)
     country = forms.ChoiceField(label="country", choices=country_names)
+    taxonomy_merge = forms.BooleanField()

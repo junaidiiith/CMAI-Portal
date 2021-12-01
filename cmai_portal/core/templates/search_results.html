@@ -3,20 +3,67 @@
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}{% endblock stylesheets %}
 
+
 {% block content %}
-
     <main>
-        
 <!--        {% include 'includes/preloader.html' %}-->
-
         <!-- Hero -->
         <section class="section-header">
             <div class="container">
-                <h1>Publications Results</h1>
+<!--                <h1> Publications Summary </h1>-->
+<!--                <div class="row">-->
+<!--                    <div class="col">-->
+<!--                        <h5>Total Authors Involved: {{summary.affiliations_summary.author_count}}</h5>-->
+<!--                        <h6>Top 10 Authors</h6>-->
+<!--                        <ul>-->
+<!--                            {% for author in summary.affiliations_summary.topNAuthors %}-->
+<!--                            <li> {{author.0}} </li>-->
+<!--                            {% endfor %}-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                    <div class="col">-->
+<!--                        <h5>Total Countries Involved: {{summary.affiliations_summary.country_count}}</h5>-->
+<!--                        <h6>Top 10 Countries</h6>-->
+<!--                        <ul>-->
+<!--                            {% for country in summary.affiliations_summary.topNCountries %}-->
+<!--                            <li> {{country.0}} </li>-->
+<!--                            {% endfor %}-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                    <div class="col">-->
+<!--                        <h5>Total Institutions Involved: {{summary.affiliations_summary.uni_count}}</h5>-->
+<!--                        <h6>Top 10 Institutions</h6>-->
+<!--                        <ul>-->
+<!--                            {% for university in summary.affiliations_summary.topNUniversities %}-->
+<!--                            <li> {{university.0}} </li>-->
+<!--                            {% endfor %}-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="row">-->
+<!--                    <div class="col">-->
+<!--                        <h5>Total Involved Journals: {{summary.doc_type_summary.journal_count}}</h5>-->
+<!--                        <h6>Top 5 Journals</h6>-->
+<!--                        <ul>-->
+<!--                            {% for journal in summary.doc_type_summary.topNJournals %}-->
+<!--                            <li> {{journal.0}} </li>-->
+<!--                            {% endfor %}-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                    <div class="col">-->
+<!--                        <h5>Total Conferences Involved: {{summary.doc_type_summary.conferences_count}}</h5>-->
+<!--                        <h6>Top 5 Conferences </h6>-->
+<!--                        <ul>-->
+<!--                            {% for conference in summary.doc_type_summary.topNConferences %}-->
+<!--                            <li> {{conference.0}} </li>-->
+<!--                            {% endfor %}-->
+<!--                        </ul>-->
+<!--                    </div>-->
+<!--                </div>-->
+                <h1>Publications</h1>
                 {% include 'publications_results_table.html' %}
             </div>
         </section>
-
     </main>
 
 <!--    {% include 'includes/footer.html' %}-->

@@ -1,26 +1,65 @@
-<div class="section section-md">
-            <div class="container">
+             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-lg-12">
                         <div class="mb-5">
-                            <table class="table">
-                                <tr>
-                                    <th scope="col" id="class">Publication Title</th>
-                                    <th scope="col" id="teacher">Authors</th>
-                                    <th scope="col" id="males">Year</th>
-                                    <th scope="col" id="females">DOI</th>
-                                </tr>
-                                {% for publication in publications %}
-                                <tr>
-                                    <td scope="col" id="pubName">{{publication.name}}</td>
-                                    <td scope="col" id="pubAuthors">{{publication.authors}}</td>
-                                    <td scope="col" id="pubYear">{{publication.year}}</td>
-                                    <td scope="col" id="pubDOI">{{publication.doi}}</td>
-                                </tr>
-                                {% endfor %}
-                            </table>
+                            {% if publications %}
+                                <h4>Publications Found: {{publications|length}} </h4>
+                                <table class="table">
+                                    <tr>
+                                        <th scope="col" id="Title">Title</th>
+                                        <th scope="col" id="Year">Year</th>
+                                        <th scope="col" id="Authors">Authors</th>
+                                        <th scope="col" id="Abstract">Abstract</th>
+                                        <th scope="col" id="DOI">DOI</th>
+                                        <th scope="col" id="badges">Badges</th>
+                                    </tr>
+                                    {% for publication in publications %}
+                                        <tr>
+                                            <td scope="col" id="{{publication.Title}}">{{publication.Title}}</td>
+                                            <td scope="col" id="{{publication.Year}}">{{publication.Year}}</td>
+                                            <td scope="col" id="{{publication.Authors}}">{{publication.Authors}}</td>
+                                            <td scope="col" id="{{publication.Abstract}}">
+                                                <div class="accordion" id="accordionExample1">
+                                                    <div class="accordion-item">
+                                                        <h2 class="accordion-header" id="headingOne">
+                                                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                                                data-bs-target="#collapseOne{{publication.index}}" aria-expanded="true" aria-controls="collapseOne{{publication.index}}">
+                                                                Click to see full abstract
+                                                            </button>
+                                                        </h2>
+                                                        <div id="collapseOne{{publication.index}}" class="accordion-collapse collapse" aria-labelledby="headingOne{{publication.index}}"
+                                                            data-bs-parent="#accordionExample1">
+                                                            <div class="accordion-body">
+                                                                {{publication.Abstract}}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td scope="col" id="{{publication.DOI}}">
+                                                    <a href="{{publication.DOI}}" class="badge bg-info">DOI Link</a>
+                                            </td>
+                                            <td scope="col" id="{{publication.badges}}">
+                                                {% for badge in publication.badges.AI %}
+                                                    <a href="" class="badge bg-success">{{badge}}</a>
+            <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
+                                                {% endfor %}
+                                                {% for badge in publication.badges.CM %}
+                                                    <a href="" class="badge bg-warning">{{badge}}</a>
+            <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
+                                                {% endfor %}
+                                                {% for badge in publication.badges.Others %}
+                                                    <a href="" class="badge bg-danger">{{badge}}</a>
+            <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </table>
+                            {% else %}
+                           <h2>Sorry! No Publications found </h2>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-</div>

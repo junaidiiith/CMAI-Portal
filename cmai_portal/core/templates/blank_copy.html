@@ -8,24 +8,42 @@
 {% block content %}
 
     <main>
-        
-        {% include 'includes/preloader.html' %}
-
         <!-- Hero -->
+        <nav class="navbar fixed-top navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="{url 'home'}">CMAI Web Knowledge Base</a>
+            <form class="d-flex">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </nav>
         <section class="section-header">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-12 col-md-8 text-center">
-                        <h1 class="display-2 mb-3">Blank starter page</h1>
-                        <p>Hello world!</p>
-                    </div>
-                </div>
+
+            <div class="flex-shrink-0 p-3" style="width: 300px; float:left">
+                <a href="/" class="d-flex align-items-center pb-3 mb-3 link-dark text-decoration-none border-bottom">
+                  <span class="fs-5 fw-semibold">Taxonomy Filters</span>
+                </a>
+
+                <ul class="list-unstyled">
+                    <span> Artificial Intelligence </span>
+                        {% include 'taxonomy.html' with taxonomies=form.ai_taxonomies type="AI" %}
+                    <li class="border-top my-3"></li>
+                    <span>Conceptual Modeling </span>
+                        {% include 'taxonomy.html' with taxonomies=form.cm_taxonomies%}
+                    <li class="border-top my-3"></li>
+                    <span>Research Methods </span>
+                        {% include 'taxonomy.html' with taxonomies=form.others %}
+                </ul>
             </div>
+            <div id="content">
+                <h1> Publications Results </h1>
+                {% include 'publications_results_table.html' %}
+            </div>
+            <!-- Page content wrapper-->
+        <!-- Bootstrap core JS-->
         </section>
-
     </main>
-
-    {% include 'includes/footer.html' %}
 
 {% endblock content %}
 

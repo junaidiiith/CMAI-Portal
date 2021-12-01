@@ -10,31 +10,18 @@ from django.urls import reverse
 from apps.app.cmai_taxonomies import get_taxonomies
 from apps.app.searchapi import *
 from apps.app.forms import CompleteForm
+from apps.app.request_processing import get_dummy_publications
+from apps.app.request_processing import process_request_parameters, searchFor
 
 
 @login_required(login_url="/login/")
 def search_results(request):
     context = {}
     if request.method == "POST":
-        publications = [
-            {'name': "A case study on self-configuring systems in IoT based on a model-driven prototyping approach",
-             'year': 2016,
-             'authors': 'Fabian Kneer, Erik Kamsties',
-             'doi': '10.1007/978-3-319-46254-7_59'},
-            {'name': "A case study on self-configuring systems in IoT based on a model-driven prototyping approach",
-             'year': 2016,
-             'authors': 'Fabian Kneer, Erik Kamsties',
-             'doi': '10.1007/978-3-319-46254-7_59'},
-            {'name': "A case study on self-configuring systems in IoT based on a model-driven prototyping approach",
-             'year': 2016,
-             'authors': 'Fabian Kneer, Erik Kamsties',
-             'doi': '10.1007/978-3-319-46254-7_59'},
-            {'name': "A case study on self-configuring systems in IoT based on a model-driven prototyping approach",
-             'year': 2016,
-             'authors': 'Fabian Kneer, Erik Kamsties',
-             'doi': '10.1007/978-3-319-46254-7_59'}
-        ]
-        context = {'publications': publications}
+        request_input = process_request_parameters(request)
+        publications, summary = search_publications(request_input)
+        context['publications'] = publications
+        context['summary'] = summary
     html_template = loader.get_template('search_results.html')
     return HttpResponse(html_template.render(context, request))
 
@@ -42,12 +29,11 @@ def search_results(request):
 @login_required(login_url="/login/")
 def index(request):
 
-    search_types = ["Publications", "Authors", "Conferences", "Journals", "Institutions"]
     taxonomies = get_taxonomies()
-    form = CompleteForm(taxonomies, search_types)
-    context = {'segment': 'index', 'form': form, "search_types": search_types}
-
-    html_template = loader.get_template('home.html')
+    form = CompleteForm(taxonomies, searchFor)
+    # context = {'segment': 'index', 'form': form, "search_types": searchFor}
+    context = {'publications': get_dummy_publications(), 'form': form}
+    html_template = loader.get_template('blank_copy.html')
     return HttpResponse(html_template.render(context, request))
 
 

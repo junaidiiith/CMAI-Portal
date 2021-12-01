@@ -12,29 +12,6 @@
         <!-- Hero -->
         <form action="{% url 'search_results' %}" method="post" enctype='multipart/form-data'>
             {% csrf_token %}
-            <section>
-                <div class="container">
-                    <div class="row justify-content-center">
-                        <div class="col-10">
-                            {% for taxonomy in form.ai_taxonomies %}
-                                {% include 'ai_domain_taxonomies.html' with taxonomy=taxonomy %}
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                <div class="container">
-                    <div class="row justify-content-center">
-                        <div class="col-9">
-                            {% for taxonomy in form.cm_taxonomies %}
-                                {% include 'ai_domain_taxonomies.html' with taxonomy=taxonomy %}
-                            {% endfor %}
-                            {% for taxonomy in form.others %}
-                                {% include 'ai_domain_taxonomies.html' with taxonomy=taxonomy %}
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </section>
             <section class="section-header">
                     <div class="container">
                         <div class="row justify-content-center">
@@ -52,19 +29,19 @@
                                 {% for search_type in form.search_types %}
                                     {% include 'search_types.html' with search_type=search_type %}
                                 {% endfor %}
-                                <div>
-                                    <div>
-                                        <fieldset>
-                                            {% for choice in form.search_type_logical %}
-                                                <input id="{{choice.choice_label}}" class="form-check-input"
-                                                       type="radio" value="{{choice.choice_label}}" name="logicalOperation" checked>
-                                                <label class="form-check-label" for="{{choice.choice_label}}">
-                                                    {{choice.tag}}
-                                                </label>
-                                            {% endfor %}
-                                        </fieldset>
-                                    </div>
-                                </div>
+<!--                                <div>-->
+<!--                                    <div>-->
+<!--                                        <fieldset>-->
+<!--                                            {% for choice in form.search_type_logical %}-->
+<!--                                                <input id="{{choice.choice_label}}" class="form-check-input"-->
+<!--                                                       type="radio" value="{{choice.choice_label}}" name="logicalOperation" checked>-->
+<!--                                                <label class="form-check-label" for="{{choice.choice_label}}">-->
+<!--                                                    {{choice.tag}}-->
+<!--                                                </label>-->
+<!--                                            {% endfor %}-->
+<!--                                        </fieldset>-->
+<!--                                    </div>-->
+<!--                                </div>-->
                                 <div class="container">
                                     <div class="row align-items-start">
                                         <div class="col">
@@ -83,16 +60,16 @@
                                                 {% endfor %}
                                             </select>
                                         </div>
-                                        <div class="col">
-                                            <div class="mb-3">
-                                                <select name="country" class="form-select" id="inlineFormCustomSelectPref" aria-label="Default select example">
-                                                    <option selected>Country</option>
-                                                    {% for country in form.country %}
-                                                        <option value="{{country.choice_label}}">{{country.choice_label}}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                        </div>
+<!--                                        <div class="col">-->
+<!--                                            <div class="mb-3">-->
+<!--                                                <select name="country" class="form-select" id="inlineFormCustomSelectPref" aria-label="Default select example">-->
+<!--                                                    <option selected>Country</option>-->
+<!--                                                    {% for country in form.country %}-->
+<!--                                                        <option value="{{country.choice_label}}">{{country.choice_label}}</option>-->
+<!--                                                    {% endfor %}-->
+<!--                                                </select>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
                                     </div>
                                 </div>
                             </div>
