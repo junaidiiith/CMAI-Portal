@@ -1,0 +1,36 @@
+<li class="mb-1">
+    <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#{{id}}-collapse" aria-expanded="false">
+        {{name}}
+    </button>
+    <div class="collapse" id="{{id}}-collapse">
+      <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+          {% for value in entries.values %}
+            <li>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="{{entry.name}}:{{value}}" id="{{value}}" checked>
+                    <label class="form-check-label" for="{{value}}">
+                        {{value}}
+                    </label>
+                </div>
+            </li>
+          {% endfor %}
+          <li>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="all:{{entry.name}}" id="selectAll"
+                       onClick="toggle(this, '{{entry.name}}')" checked>
+                <label class="form-check-label" for="selectAll">
+                    Select All
+                </label>
+            </div>
+        </li>
+      </ul>
+    </div>
+</li>
+<script language="JavaScript">
+function toggle(source, entryName) {
+  checkboxes = document.querySelectorAll('input[name^="'+ entryName +'"]');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    checkboxes[i].checked = source.checked;
+  }
+}
+</script>

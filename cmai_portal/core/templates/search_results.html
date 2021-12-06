@@ -1,72 +1,68 @@
 {% extends "layouts/base.html" %}
 
+{% block title %} Results {% endblock %}
+
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}{% endblock stylesheets %}
 
-
 {% block content %}
+
     <main>
-<!--        {% include 'includes/preloader.html' %}-->
         <!-- Hero -->
+        <nav class="navbar fixed-top navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="{url 'home'}">CMAI Web Knowledge Base</a>
+            <form class="d-flex">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </nav>
         <section class="section-header">
-            <div class="container">
-<!--                <h1> Publications Summary </h1>-->
-<!--                <div class="row">-->
-<!--                    <div class="col">-->
-<!--                        <h5>Total Authors Involved: {{summary.affiliations_summary.author_count}}</h5>-->
-<!--                        <h6>Top 10 Authors</h6>-->
-<!--                        <ul>-->
-<!--                            {% for author in summary.affiliations_summary.topNAuthors %}-->
-<!--                            <li> {{author.0}} </li>-->
-<!--                            {% endfor %}-->
-<!--                        </ul>-->
-<!--                    </div>-->
-<!--                    <div class="col">-->
-<!--                        <h5>Total Countries Involved: {{summary.affiliations_summary.country_count}}</h5>-->
-<!--                        <h6>Top 10 Countries</h6>-->
-<!--                        <ul>-->
-<!--                            {% for country in summary.affiliations_summary.topNCountries %}-->
-<!--                            <li> {{country.0}} </li>-->
-<!--                            {% endfor %}-->
-<!--                        </ul>-->
-<!--                    </div>-->
-<!--                    <div class="col">-->
-<!--                        <h5>Total Institutions Involved: {{summary.affiliations_summary.uni_count}}</h5>-->
-<!--                        <h6>Top 10 Institutions</h6>-->
-<!--                        <ul>-->
-<!--                            {% for university in summary.affiliations_summary.topNUniversities %}-->
-<!--                            <li> {{university.0}} </li>-->
-<!--                            {% endfor %}-->
-<!--                        </ul>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="row">-->
-<!--                    <div class="col">-->
-<!--                        <h5>Total Involved Journals: {{summary.doc_type_summary.journal_count}}</h5>-->
-<!--                        <h6>Top 5 Journals</h6>-->
-<!--                        <ul>-->
-<!--                            {% for journal in summary.doc_type_summary.topNJournals %}-->
-<!--                            <li> {{journal.0}} </li>-->
-<!--                            {% endfor %}-->
-<!--                        </ul>-->
-<!--                    </div>-->
-<!--                    <div class="col">-->
-<!--                        <h5>Total Conferences Involved: {{summary.doc_type_summary.conferences_count}}</h5>-->
-<!--                        <h6>Top 5 Conferences </h6>-->
-<!--                        <ul>-->
-<!--                            {% for conference in summary.doc_type_summary.topNConferences %}-->
-<!--                            <li> {{conference.0}} </li>-->
-<!--                            {% endfor %}-->
-<!--                        </ul>-->
-<!--                    </div>-->
-<!--                </div>-->
-                <h1>Publications</h1>
-                {% include 'publications_results_table.html' %}
-            </div>
+            <form action="">
+                <div class="container-fluid">
+                  <div class="row">
+                          {% include 'sidebar.html' with form=form summary=summary %}
+
+                    <div class="col" id="main">
+                        {% if search_type == "Publications" %}
+                            <h1> Publications Results for "{{search_query}}"</h1>
+                            {% include 'publications_results_table.html' with publications=results %}
+                        {% elif search_type == "Journals & Conferences" %}
+                            <h1> Journals & Conferences Results for "{{search_query}}"</h1>
+                            {% include 'venue_results.html' with venues=results %}
+                        {% elif search_type == "Authors" %}
+                            <h1> Authors Results for "{{search_query}}"</h1>
+                            {% include 'authors_results.html' with authors=results %}
+                        {% else %}
+                            {% include 'publications_results_table.html' with publications=results %}
+                        {% endif %}
+                    </div>
+                  </div>
+                </div>
+            </form>
+            <nav aria-label="...">
+              <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                  <span class="page-link">Previous</span>
+                </li>
+                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                <li class="page-item active" aria-current="page">
+                  <span class="page-link">2</span>
+                </li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">4</a></li>
+                <li class="page-item"><a class="page-link" href="#">5</a></li>
+                <li class="page-item"><a class="page-link" href="#">6</a></li>
+                <li class="page-item">
+                  <a class="page-link" href="#">Next</a>
+                </li>
+              </ul>
+            </nav>
+            <!-- Page content wrapper-->
+        <!-- Bootstrap core JS-->
         </section>
     </main>
-
-<!--    {% include 'includes/footer.html' %}-->
 
 {% endblock content %}
 

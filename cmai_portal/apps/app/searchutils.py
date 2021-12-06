@@ -5,6 +5,7 @@ import pandas as pd
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from apps.app.data import cmai_data
+from apps.app.cmai_taxonomies import get_taxonomies
 
 nltk.download('stopwords')
 nltk.download('punkt')
@@ -19,6 +20,13 @@ badges_categories = {
     'Contribution Type': 'Others',
     'Research Type': 'Others'
 }
+search_type_columns = {
+    'Publications': ['Title', 'Abstract'],
+    'Journals & Conferences': ['SourceTitle'],
+    'Authors': ['Authors']
+}
+
+SOURCE_TITLE = 'SourceTitle'
 
 
 def get_records_by_column_value(column_name, value):
@@ -56,43 +64,173 @@ def get_records_by_year(gt_value=1980, lt_value=2021):
     return results
 
 
-def get_records_by_keywords(search_query):
+def get_records_by_keywords(search_query, search_type):
     text_tokens = word_tokenize(search_query)
-    tokens_without_sw = [word for word in text_tokens if word not in stopwords.words() and word.isalpha()]
-    title_records = get_records_by_column_values('Title', tokens_without_sw)
-    abstract_records = get_records_by_column_values('Abstract', tokens_without_sw)
-    results = pd.concat([title_records, abstract_records], ignore_index=True).drop_duplicates().reset_index(drop=True)
+    if search_type == "Publications":
+        text_tokens = [word for word in text_tokens if word not in stopwords.words() and word.isalpha()]
+
+    results = pd.DataFrame()
+    for column in search_type_columns[search_type]:
+        records = get_records_by_column_values(column, text_tokens)
+        results = pd.concat([results, records], ignore_index=True).drop_duplicates().reset_index(drop=True)
     return results
 
 
-def get_records(taxonomies, search_query, start_year, end_year):
-    records_by_keywords = get_records_by_keywords(search_query)
+def present_in_request(taxonomy_value, request_dict):
+    for k, v in request_dict.items():
+        if taxonomy_value in k:
+            return True
+    return False
+
+
+def get_taxonomies_count(results, request_taxonomies):
+    all_taxonomies = get_taxonomies()
+    for taxonomy_type, taxonomies in all_taxonomies.items():
+        for taxonomy in taxonomies:
+            for i, result in results.iterrows():
+                if not isinstance(result[taxonomy['name']], float):
+                    record_values = [value.strip() for value in result[taxonomy['name']].split(",")]
+                    for value in record_values:
+                        taxonomy['values'][value] += 1
+
+    final_taxonomies = dict()
+    for taxonomy_type, taxonomies in all_taxonomies.items():
+        final_taxonomies[taxonomy_type] = list()
+        for taxonomy in taxonomies:
+            temp_taxonomy = dict()
+            temp_taxonomy['count'] = sum(taxonomy['values'].values())
+            temp_taxonomy['name'] = taxonomy['name']
+            t_values = dict()
+            for k, v in taxonomy['values'].items():
+                if v:
+                    t_values[k] = {"value": v, "checked": present_in_request(k, request_taxonomies)}
+
+            temp_taxonomy['values'] = t_values
+            final_taxonomies[taxonomy_type].append(temp_taxonomy)
+    return final_taxonomies
+
+
+def get_records(taxonomies, search_query, search_type, start_year, end_year):
+    records_by_keywords = get_records_by_keywords(search_query, search_type)
     records_by_taxonomies = get_records_by_taxonomies(taxonomies)
     records_by_year = get_records_by_year(start_year, end_year)
     results = pd.merge(records_by_keywords, records_by_taxonomies, how='inner')
     results = pd.merge(results, records_by_year, how='inner')
+    taxonomies_count = get_taxonomies_count(results, taxonomies)
     summary = create_results_summary(results)
-    return results, summary
+    return results, summary, taxonomies_count
 
 
-def format_records_to_show(df, mandatory_header, badges_columns):
+def get_badges(result, badges_columns):
+    badges = {'AI': list(), 'CM': list(), 'Others': list()}
+    for column in badges_columns:
+        if not isinstance(result[column], float):
+            badges[badges_categories[column]] += [badge.strip() for badge in result[column].split(',')]
+    return badges
+
+
+def get_author_from_authors_list(authors, query):
+    authors_list = list()
+    authors = [author.strip() for author in authors.split(',')]
+    for author in authors:
+        if query.lower() in author.lower():
+            authors_list.append(author)
+    return authors_list
+
+
+def get_authors_by_publications(publications, search_query):
+    author_set = set()
+    for i, row in publications.iterrows():
+        for author in get_author_from_authors_list(row['Authors'], search_query):
+            author_set.add(author)
+    authors_data = dict()
+    for i, publication in publications.iterrows():
+        record = publication
+        for author in author_set:
+            if author in record['Authors']:
+                if author in authors_data:
+                    authors_data[author].append(record)
+                else:
+                    authors_data[author] = [record]
+    return authors_data
+
+
+def get_venues_by_publications(publications, search_query):
+    venues_set = set()
+    for i, row in publications.iterrows():
+        if search_query.lower() in row[SOURCE_TITLE].lower():
+            venues_set.add(row[SOURCE_TITLE])
+    venues_data = dict()
+    for i, publication in publications.iterrows():
+        record = publication
+        for venue in venues_set:
+            if venue == record[SOURCE_TITLE]:
+                if venue in venues_data:
+                    venues_data[venue].append(record)
+                else:
+                    venues_data[venue] = [record]
+    return venues_data
+
+
+def format_publications_to_show(df, mandatory_header, badges_columns):
     results = list()
     for i, row in df.iterrows():
-        result = {'badges': {'AI': list(), 'CM': list(), 'Others': list()}}
+        result = dict()
         for column in mandatory_header:
             result[column] = row[column]
-        for column in badges_columns:
-            if not isinstance(row[column], float):
-                result['badges'][badges_categories[column]] += [badge.strip() for badge in row[column].split(',')]
-        result['index'] = i
+        result['badges'] = get_badges(row, badges_columns)
+        result['index'] = i + 1
         results.append(result)
     return results
+
+
+def format_authors_to_show(df, search_query, mandatory_header, badges_columns):
+    authors_data = get_authors_by_publications(df, search_query)
+    authors_results = list()
+    for author, publications in authors_data.items():
+        author_result = {'name': author}
+        publications_list = list()
+        for publication in publications:
+            publication_data = dict()
+            for column in mandatory_header:
+                publication_data[column] = publication[column]
+            publication_data['affiliations'] = get_affiliations_list(publication['Author Affiliations'], search_query)
+            publication_data['badges'] = get_badges(publication, badges_columns)
+            publication_data['hash'] = hash(publication['Title'])
+            publications_list.append(publication_data)
+        author_result['publications'] = publications_list
+        authors_results.append(author_result)
+    return authors_results
+
+
+def format_venues_to_show(df, search_query, mandatory_header, badges_columns):
+    venues_data = get_venues_by_publications(df, search_query)
+    venues_results = list()
+    for venue, publications in venues_data.items():
+        venue_result = {'name': venue}
+        publications_list = list()
+        for publication in publications:
+            publication_data = dict()
+            for column in mandatory_header:
+                publication_data[column] = publication[column]
+            publication_data['affiliations'] = get_affiliations_list(publication['Author Affiliations'])
+            publication_data['badges'] = get_badges(publication, badges_columns)
+            publications_list.append(publication_data)
+        venue_result['publications'] = publications_list
+        venues_results.append(venue_result)
+    return venues_results
 
 
 def create_results_summary(results):
     authors_affiliations_summary = get_authors_affiliations_summary(results)
     doc_type_summary = get_document_type_summary(results)
-    return {"affiliations_summary": authors_affiliations_summary, "doc_type_summary": doc_type_summary}
+    years = results['Year'].unique().tolist()
+    years.sort()
+    return {
+        "affiliations_summary": authors_affiliations_summary,
+        "doc_type_summary": doc_type_summary,
+        'years': {'name': 'Year', 'values': years}
+    }
 
 
 def add_if_present(keys, dictionary):
@@ -157,15 +295,27 @@ def get_authors_affiliations_summary(results):
         "topNAuthors": getTopN(authors_count, 10),
         "topNUniversities": getTopN(universities_count, 10),
         "topNCountries": getTopN(countries_count, 10),
+        "authors": {
+            'name': "Authors",
+            'values': list(authors_count.keys())
+        },
+        "Institutions": {
+            'name': "Institutions",
+            'values': list(universities_count.keys())
+        },
+        "countries": {
+            "name": "Countries",
+            "values": list(countries.keys())
+        }
     }
 
     return affiliation_summary
 
 
 def get_document_type_summary(results):
-    journals = results.loc[results['Document Type'] == 'Article']['SourceTitle']
-    papers = results.loc[results['Document Type'] == 'Conference Paper']['SourceTitle']
-    chapters = results[results['Document Type'] == 'Book Chapter']['SourceTitle']
+    journals = results.loc[results['DocumentType'] == 'Article']['SourceTitle']
+    papers = results.loc[results['DocumentType'] == 'Conference Paper']['SourceTitle']
+    chapters = results[results['DocumentType'] == 'Book Chapter']['SourceTitle']
     chapter_count, paper_count, journal_count = dict(), dict(), dict()
     for paper in papers:
         try:
@@ -190,6 +340,51 @@ def get_document_type_summary(results):
         'conferences_count': len(papers),
         "topNJournals": getTopN(journal_count, 5),
         "topNConferences": getTopN(paper_count, 5),
+        "conferences": {
+            'name': "Conference Papers",
+            'values': list(paper_count.keys()),
+        },
+        "journals": {
+            'name': "Journals",
+            'values': list(journal_count.keys())
+        }
     }
 
     return doc_type_summary
+
+
+def get_country_and_university_from_affiliation(aff):
+    country = aff[-1]
+    university = " ".join(aff[:-1]).strip()
+    if "," in university and "university of" == university.split(',')[1].lower().strip():
+        university = " ".join(university.split(',')[::-1]).strip()
+    return university, country
+
+
+def get_affiliations_list(affiliations, search_query=None):
+    affiliations_list = list()
+    affiliations = ast.literal_eval(affiliations)
+    for affiliation in affiliations:
+        affiliation_data = {
+            "author": affiliation['name'],
+            'searched_author': True if search_query and search_query.lower() in affiliation['name'].lower() else False
+        }
+        aff = affiliation['Affiliation(s)']
+        institute_countries = list()
+        if not aff:
+            affiliation_data['institute_countries'] = list()
+        if isinstance(aff[0], tuple):
+            aff = list(aff)
+
+        if isinstance(aff, list):
+            for a in aff:
+                u, c = get_country_and_university_from_affiliation(a)
+                institute_countries.append({'university': u, 'country': c})
+
+        elif isinstance(aff, tuple):
+            u, c = get_country_and_university_from_affiliation(aff)
+            institute_countries.append({'university': u, 'country': c})
+        affiliation_data['institute_countries'] = institute_countries
+        affiliations_list.append(affiliation_data)
+
+    return affiliations_list

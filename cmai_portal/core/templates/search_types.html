@@ -1,4 +1,16 @@
-<input class="form-check-input" type="checkbox" name="searchFor:{{search_type.label}}" id="{{search_type}}" checked>
-<label class="form-check-label" for="{{search_type}}">
-    {{search_type.label}}
-</label>
+<div>
+    <fieldset style="margin:5px; padding:5px;">
+        {% for search_type in search_types %}
+            {% if search_type == "Publications" %}
+                <input id="{{search_type}}" class="form-check-input"
+                       type="radio" value="{{search_type}}" name="search-type" checked>
+            {% else %}
+                <input id="{{search_type}}" class="form-check-input"
+                       type="radio" value="{{search_type}}" name="search-type">
+            {% endif %}
+            <label class="form-check-label" for="{{search_type}}" style=" padding:0px;">
+                {{search_type}}
+            </label>
+        {% endfor %}
+    </fieldset>
+</div>

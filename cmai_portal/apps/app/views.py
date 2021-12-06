@@ -7,10 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
-from apps.app.cmai_taxonomies import get_taxonomies
 from apps.app.searchapi import *
 from apps.app.forms import CompleteForm
-from apps.app.request_processing import get_dummy_publications
 from apps.app.request_processing import process_request_parameters, searchFor
 
 
@@ -19,21 +17,24 @@ def search_results(request):
     context = {}
     if request.method == "POST":
         request_input = process_request_parameters(request)
-        publications, summary = search_publications(request_input)
-        context['publications'] = publications
-        context['summary'] = summary
+        search_type, search_query = request_input['search_type'], request_input['search_query']
+        records, summary, taxonomy_count = search_records(request_input)
+        form = CompleteForm(taxonomy_count, search_query, searchFor)
+        context = {
+            'results': records,
+            'summary': summary,
+            'form': form,
+            'search_type': search_type,
+            'search_query': search_query
+        }
     html_template = loader.get_template('search_results.html')
     return HttpResponse(html_template.render(context, request))
 
 
 @login_required(login_url="/login/")
 def index(request):
-
-    taxonomies = get_taxonomies()
-    form = CompleteForm(taxonomies, searchFor)
-    # context = {'segment': 'index', 'form': form, "search_types": searchFor}
-    context = {'publications': get_dummy_publications(), 'form': form}
-    html_template = loader.get_template('blank_copy.html')
+    context = {"search_types": searchFor}
+    html_template = loader.get_template('home.html')
     return HttpResponse(html_template.render(context, request))
 
 
