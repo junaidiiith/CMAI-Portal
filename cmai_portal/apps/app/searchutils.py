@@ -5,7 +5,6 @@ import pandas as pd
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from apps.app.data import cmai_data
-from apps.app.cmai_taxonomies import get_taxonomies
 
 nltk.download('stopwords')
 nltk.download('punkt')
@@ -22,7 +21,7 @@ badges_categories = {
 }
 search_type_columns = {
     'Publications': ['Title', 'Abstract'],
-    'Journals & Conferences': ['SourceTitle'],
+    'Venues': ['SourceTitle'],
     'Authors': ['Authors']
 }
 
@@ -42,18 +41,41 @@ def get_records_by_column_values(column_name, values):
     return results
 
 
-def get_records_by_taxonomies(taxonomies):
-    results = pd.DataFrame()
-    for taxonomy, data in taxonomies.items():
-        records = get_records_by_column_values(taxonomy, data['values'])
-        if len(results) == 0:
-            results = records
-        else:
-            if data['operator']:
-                results = pd.concat([results, records], ignore_index=True).drop_duplicates().reset_index(
-                    drop=True)
-            else:
-                results = pd.merge(results, records, how='inner')
+def get_checked_values(values):
+    checked_values = list()
+    for value, value_data in values.items():
+        if value_data['checked']:
+            checked_values.append(value)
+    return checked_values
+
+
+def get_records_by_taxonomies(taxonomies_data, checked=False):
+    results_intersection = pd.DataFrame()
+    for taxonomy_type, taxonomies in taxonomies_data.items():
+        for taxonomy in taxonomies:
+            if taxonomy['operator']:
+                values = get_checked_values(taxonomy['values']) if checked else list(taxonomy['values'].keys())
+                records = get_records_by_column_values(taxonomy['name'], values)
+                if len(results_intersection) == 0:
+                    results_intersection = records
+                else:
+                    results_intersection = pd.merge(results_intersection, records, how='inner')
+
+    results_union = pd.DataFrame()
+    for taxonomy_type, taxonomies in taxonomies_data.items():
+        for taxonomy in taxonomies:
+            if not taxonomy['operator']:
+                values = get_checked_values(taxonomy['values']) if checked else list(taxonomy['values'].keys())
+                records = get_records_by_column_values(taxonomy['name'], values)
+                if len(results_union) == 0:
+                    results_union = records
+                else:
+                    results_union = pd.concat([results_union, records], ignore_index=True).drop_duplicates()\
+                        .reset_index(drop=True)
+    if len(results_intersection):
+        results = pd.merge(results_intersection, results_union, how='inner')
+    else:
+        results = results_union
     return results
 
 
@@ -84,41 +106,48 @@ def present_in_request(taxonomy_value, request_dict):
 
 
 def get_taxonomies_count(results, request_taxonomies):
-    all_taxonomies = get_taxonomies()
-    for taxonomy_type, taxonomies in all_taxonomies.items():
+    for taxonomy_type, taxonomies in request_taxonomies.items():
         for taxonomy in taxonomies:
             for i, result in results.iterrows():
                 if not isinstance(result[taxonomy['name']], float):
                     record_values = [value.strip() for value in result[taxonomy['name']].split(",")]
                     for value in record_values:
-                        taxonomy['values'][value] += 1
+                        taxonomy['values'][value]['count'] += 1
 
     final_taxonomies = dict()
-    for taxonomy_type, taxonomies in all_taxonomies.items():
-        final_taxonomies[taxonomy_type] = list()
+    for taxonomy_type, taxonomies in request_taxonomies.items():
+        taxonomy_type_list = list()
         for taxonomy in taxonomies:
             temp_taxonomy = dict()
-            temp_taxonomy['count'] = sum(taxonomy['values'].values())
+            temp_taxonomy['count'] = sum(v['count'] for v in taxonomy['values'].values())
             temp_taxonomy['name'] = taxonomy['name']
+            temp_taxonomy['operator'] = taxonomy['operator']
             t_values = dict()
             for k, v in taxonomy['values'].items():
-                if v:
-                    t_values[k] = {"value": v, "checked": present_in_request(k, request_taxonomies)}
+                if v['count']:
+                    t_values[k] = {
+                        "count": v['count'],
+                        "checked": v['checked']
+                    }
 
             temp_taxonomy['values'] = t_values
-            final_taxonomies[taxonomy_type].append(temp_taxonomy)
+            taxonomy_type_list.append(temp_taxonomy)
+        final_taxonomies[taxonomy_type] = taxonomy_type_list
     return final_taxonomies
 
 
 def get_records(taxonomies, search_query, search_type, start_year, end_year):
     records_by_keywords = get_records_by_keywords(search_query, search_type)
     records_by_taxonomies = get_records_by_taxonomies(taxonomies)
+    records_by_taxonomies_checked = get_records_by_taxonomies(taxonomies, checked=True)
     records_by_year = get_records_by_year(start_year, end_year)
     results = pd.merge(records_by_keywords, records_by_taxonomies, how='inner')
     results = pd.merge(results, records_by_year, how='inner')
+    results_checked = pd.merge(records_by_keywords, records_by_taxonomies_checked, how='inner')
+    results_checked = pd.merge(results_checked, records_by_year, how='inner')
     taxonomies_count = get_taxonomies_count(results, taxonomies)
     summary = create_results_summary(results)
-    return results, summary, taxonomies_count
+    return results_checked, summary, taxonomies_count
 
 
 def get_badges(result, badges_columns):
@@ -373,6 +402,7 @@ def get_affiliations_list(affiliations, search_query=None):
         institute_countries = list()
         if not aff:
             affiliation_data['institute_countries'] = list()
+            continue
         if isinstance(aff[0], tuple):
             aff = list(aff)
 

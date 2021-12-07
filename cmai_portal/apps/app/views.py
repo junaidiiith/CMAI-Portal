@@ -9,25 +9,73 @@ from django.template import loader
 from django.urls import reverse
 from apps.app.searchapi import *
 from apps.app.forms import CompleteForm
-from apps.app.request_processing import process_request_parameters, searchFor
+from apps.app.request_processing import process_request_parameters, searchFor, get_taxonomies_based_on_request
+
+results_template_map = {
+    "Publications": "publications_results.html",
+    "Venues": "venue_results.html",
+    "Authors": "authors_results.html"
+}
+
+step = 10
 
 
 @login_required(login_url="/login/")
 def search_results(request):
     context = {}
+    results_template = "publications_results.html"
     if request.method == "POST":
         request_input = process_request_parameters(request)
         search_type, search_query = request_input['search_type'], request_input['search_query']
+        request_input['taxonomies'] = get_taxonomies_based_on_request(request, search_query, search_type)
         records, summary, taxonomy_count = search_records(request_input)
         form = CompleteForm(taxonomy_count, search_query, searchFor)
         context = {
-            'results': records,
+            'results': records[:step],
+            'start': 1,
+            'end': min(step, len(records)),
+            'first': 1,
+            'last': (len(records)//step)+1,
+            'current': 1,
+            'previous': 1,
+            'next': min(2, len(records)//step),
+            'total_records': len(records),
             'summary': summary,
             'form': form,
             'search_type': search_type,
-            'search_query': search_query
+            'search_query': search_query,
+            'pages': range(1, (len(records)//step)+2)
         }
-    html_template = loader.get_template('search_results.html')
+        request.session[search_query.lower()+search_type] = {
+            'results': records,
+            'taxonomy_count': taxonomy_count,
+            'summary': summary
+        }
+        results_template = results_template_map[search_type]
+
+    if request.method == "GET":
+        search_query, search_type, page_id = request.GET['query'], request.GET['search_type'], int(request.GET['page_index'])
+        session_output = request.session.get(search_query.lower()+search_type)
+        form = CompleteForm(session_output['taxonomy_count'], search_query, search_type)
+        records, summary = session_output['results'], session_output['summary']
+        context = {
+            'results': records[(page_id-1)*step:page_id*step-1],
+            'start': ((page_id-1)*step)+1,
+            'end': min(page_id*step, len(records)),
+            'first': 1,
+            'last': (len(records)//step)+1,
+            'current': page_id,
+            'previous': page_id-1,
+            'next': min(page_id+1, len(records) // step),
+            'total_records': len(records),
+            'summary': summary,
+            'form': form,
+            'search_type': search_type,
+            'search_query': search_query,
+            'pages': range(1, (len(records)//step)+2)
+        }
+        results_template = results_template_map[search_type]
+    html_template = loader.get_template(results_template)
     return HttpResponse(html_template.render(context, request))
 
 

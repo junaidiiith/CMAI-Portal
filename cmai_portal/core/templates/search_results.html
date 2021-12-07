@@ -11,9 +11,10 @@
         <!-- Hero -->
         <nav class="navbar fixed-top navbar-dark bg-dark">
           <div class="container-fluid">
-            <a class="navbar-brand" href="{url 'home'}">CMAI Web Knowledge Base</a>
-            <form class="d-flex">
-              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <a class="navbar-brand" href="{% url 'home' %}">CMAI Web Knowledge Base</a>
+            <form class="d-flex" action="{% url 'search_results' %}" method="post" enctype='multipart/form-data'>
+                {% csrf_token %}
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name='search-box'>
               <button class="btn btn-outline-success" type="submit">Search</button>
             </form>
           </div>

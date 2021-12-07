@@ -1,76 +1,61 @@
-                 <div class="row justify-content-center">
-                    <div class="col-lg-12">
-                        <div class="mb-5">
-                            {% if venues %}
-                                <h4>Venues Found: {{venues|length}} </h4>
-                                {% for venue in venues %}
-                                    <h3>{{venue.name}}</h3>
-                                    <h4>Publications in {{venue.name}}</h4>
-                                    <div class="row">
-                                        <div class="col-12 mb-5">
-                                            {% for publication in venue.publications %}
-                                                <div class="card shadow mb-6">
-                                                    <div class="card-body px-4 py-4 text-center text-md-left">
-                                                        <div class="row align-items-center">
-                                                            <div class="row">
-                                                                <div class="col-md-8">
-                                                                    <h5 class="mb-3"><a href="{{publication.DOI}}"><strong>{{publication.Title}}</strong></a>, {{publication.Year}}</h5>
-                                                                    <h5> <small class="text-muted">{{publication.DocumentType}}, {{publication.SourceTitle}}</small></h5>
-                                                                    <p class="mb-0">
-                                                                        {% for affiliation in publication.affiliations %}
-                                                                            <ul>
-                                                                    <li> {% if affiliation.searched_author %} <strong>{{affiliation.author}}</strong> {% else %} {{affiliation.author}} {% endif %} -
-                                                                                    {% for institute_country in affiliation.institute_countries %}
-                                                                                    <i>{{institute_country.university}}, {{institute_country.country}}</i>
-                                                                                    {% endfor %}
-                                                                                </li>
-                                                                            </ul>
-                                                                        {% endfor %}
-                                                                    </p>
-                                                                </div>
-                                                                <div class="col">
-                                                                    {% for badge in publication.badges.AI %}
-                                                                        <span class="badge bg-success">{{badge}}</span>
-                                <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
-                                                                    {% endfor %}
-                                                                    <br/>
-                                                                    {% for badge in publication.badges.CM %}
-                                                                        <span class="badge bg-warning">{{badge}}</span>
-                                <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
-                                                                    {% endfor %}
-                                                                    <br/>
-                                                                    {% for badge in publication.badges.Others %}
-                                                                        <span class="badge bg-danger">{{badge}}</span>
-                                <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
-                                                                    {% endfor %}
-                                                                </div>
-                                                            </div>
-                                                             <div class="accordion" id="accordionExample1">
-                                                                <div class="accordion-item">
-                                                                    <h2 class="accordion-header" id="headingOne">
-                                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                                                            data-bs-target="#collapseOne{{publication.hash}}" aria-expanded="true" aria-controls="collapseOne{{publication.has}}">
-                                                                            Click to see full abstract
-                                                                        </button>
-                                                                    </h2>
-                                                                    <div id="collapseOne{{publication.hash}}" class="accordion-collapse collapse" aria-labelledby="headingOne{{publication.hash}}"
-                                                                        data-bs-parent="#accordionExample1">
-                                                                        <div class="accordion-body">
-                                                                            {{publication.Abstract}}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                           <h2>Sorry! No Venues found </h2>
-                            {% endif %}
-                        </div>
+                {% extends "layouts/base.html" %}
+
+{% block title %} Results {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<main>
+        <!-- Hero -->
+        <nav class="navbar fixed-top navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">CMAI Web Knowledge Base</a>
+            <form class="d-flex" action="{% url 'search_results' %}?search_type=Venues" method="post" enctype='multipart/form-data'>
+                {% csrf_token %}
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name='search-box'>
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </nav>
+        <section class="section-header">
+            <form action="">
+                <div class="container-fluid">
+                  <div class="row">
+                          {% include 'sidebar.html' with form=form summary=summary %}
+
+                    <div class="col" id="main">
+                        <h1> Authors Results for "{{search_query}}"</h1>
+                        {% include 'venue_results_data.html' with venues=results total_records=total_records search_query=search_query search_type=search_type %}
                     </div>
+                  </div>
                 </div>
+            </form>
+            <nav aria-label="...">
+              <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                  <span class="page-link">Previous</span>
+                </li>
+                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                <li class="page-item active" aria-current="page">
+                  <span class="page-link">2</span>
+                </li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">4</a></li>
+                <li class="page-item"><a class="page-link" href="#">5</a></li>
+                <li class="page-item"><a class="page-link" href="#">6</a></li>
+                <li class="page-item">
+                  <a class="page-link" href="#">Next</a>
+                </li>
+              </ul>
+            </nav>
+            <!-- Page content wrapper-->
+        <!-- Bootstrap core JS-->
+        </section>
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
