@@ -1,8 +1,12 @@
 import ast
 
-from apps.app.data import cmai_data
+from apps.app.data import cmai_data, countries
 from apps.app import cmai_taxonomies
 
+years = [year for year in range(1980, 2022)]
+country_names = countries['Country'].values.tolist()
+country_names.sort()
+country_names = [country for country in country_names]
 
 columns = ["AI Taxonomy Domain", 'AI Taxonomy Subdomain', 'AI Technique', 'AI model Value to CM',
            'Modeling Purpose', 'Modelling Language', 'Contribution Type', 'Research Type']
@@ -45,50 +49,103 @@ def update_taxonomy(request_post_dict, taxonomy, taxonomies):
             if not found:
                 values[value]['checked'] = False
 
-        if "operator:"+filter_taxonomy['name'] in request_post_dict:
-            filter_taxonomy['operator'] = True
+        # if "operator:"+filter_taxonomy['name'] in request_post_dict:
+        #     filter_taxonomy['operator'] = True
+
+
+def update_year(request_post_dict, non_taxonomies):
+    tax_years = non_taxonomies['years']
+    filter_years = list()
+    for k, v in request_post_dict.items():
+        if k.startswith("years_check:"):
+            filter_years.append(int(k.split(':')[1]))
+    for year, year_data in tax_years['values']:
+        if year not in filter_years:
+            year_data['checked'] = False
+
+    return tax_years
+
+
+def update_country(request_post_dict, non_taxonomies):
+    tax_countries = non_taxonomies['years']
+    filter_countries = list()
+    for k, v in request_post_dict.items():
+        if k.startswith("countries_check:"):
+            filter_countries.append(int(k.split(':')[1]))
+    for country, country_data in tax_countries['values']:
+        if country not in filter_countries:
+            country_data['checked'] = False
+
+    return tax_countries
 
 
 def update_taxonomies(request, search_query, search_type):
     request_post_dict = request.POST.dict()
-    tax_key = 'taxonomies' + search_query.lower() + search_type.lower()
-    assert tax_key in request.session
-    taxonomies = request.session[tax_key]
+    key = 'taxonomies_and_non_taxonomies_data' + search_query.lower() + search_type.lower()
+    assert key in request.session
+    data = request.session[key]
+    taxonomies, non_taxonomies = data['taxonomies'], data['non_taxonomies']
     for k, v in request_post_dict.items():
         if k.startswith("apply_filter"):
             taxonomy = k.split(":")[1]
             update_taxonomy(request_post_dict, taxonomy, taxonomies)
-    initialise_count(taxonomies)
-    return taxonomies
+            break
+        elif k.startswith("filter_year"):
+            update_year(request_post_dict, non_taxonomies)
+            break
+        elif k.startswith("filter_country"):
+            update_country(request_post_dict, non_taxonomies)
+            break
+    # initialise_count(taxonomies, non_taxonomies)
+    return taxonomies, non_taxonomies
 
 
 def initialise_taxonomies(request, search_query, search_type):
     taxonomies = cmai_taxonomies.get_taxonomies()
-    tax_key = 'taxonomies' + search_query.lower() + search_type.lower()
-    request.session[tax_key] = taxonomies
-    return taxonomies
+    non_taxonomies = {
+        "years": {
+            "name": "years",
+            "values": {year: {'count': 0, 'checked': True, 'to_show': True} for year in years},
+            "count": 0
+        },
+        "countries": {
+            "name": "countries",
+            "values": {country: {'count': 0, 'checked': True, 'to_show': True} for country in country_names},
+            "count": 0
+        },
+    }
+    tax_key = 'taxonomies_and_non_taxonomies_data' + search_query.lower() + search_type.lower()
+    request.session[tax_key] = {
+        "taxonomies": taxonomies,
+        "non_taxonomies": non_taxonomies
+    }
+    return taxonomies, non_taxonomies
 
 
-def initialise_count(all_taxonomies):
+def initialise_count(all_taxonomies, non_taxonomies):
     for taxonomy_type, taxonomies in all_taxonomies.items():
         for taxonomy in taxonomies:
             taxonomy['count'] = 0
             for _, values in taxonomy['values'].items():
                 values['count'] = 0
 
+    for taxonomy_type, values in non_taxonomies.items():
+        for value, data in values.items():
+            data['values']['count'] = 0
+
 
 def get_taxonomies_based_on_request(request, search_query, search_type):
     request_post_dict = request.POST.dict()
     filter_applied = False
     for k, v in request_post_dict.items():
-        if k.startswith("apply_filter"):
+        if k.startswith("apply_filter") or k.startswith("filter_years") or k.startswith("filter_countries"):
             filter_applied = True
     if filter_applied:
-        taxonomies = update_taxonomies(request, search_query, search_type)
+        taxonomies, non_taxonomies = update_taxonomies(request, search_query, search_type)
     else:
-        taxonomies = initialise_taxonomies(request, search_query, search_type)
+        taxonomies, non_taxonomies = initialise_taxonomies(request, search_query, search_type)
 
-    return taxonomies
+    return taxonomies, non_taxonomies
 
 
 def process_request_parameters(request):
@@ -104,13 +161,6 @@ def process_request_parameters(request):
             if key.endswith(searchForType):
                 searchForTypes.append(key.split(":")[1])
 
-    start_year, end_year = MIN_YEAR, MAX_YEAR
-
-    countries = list(set([country for countries in cmai_data['Countries']
-                          for country in set(ast.literal_eval(countries))]))
-    if COUNTRY in request_post_dict and request_post_dict[COUNTRY] != 'Country':
-        countries = request_post_dict[COUNTRY]
-
     if SEARCH_TYPE_POST in request_post_dict:
         search_type = request_post_dict[SEARCH_TYPE_POST]
         if search_type == "Journals & Conferences":
@@ -123,9 +173,6 @@ def process_request_parameters(request):
     context = {
         'search_query': search_query,
         'searchForTypes': searchForTypes,
-        'start_year': start_year,
-        'end_year': end_year,
-        'countries': countries,
         'search_type': search_type,
         'page_id': page_index
     }
@@ -143,4 +190,3 @@ def get_dummy_publications():
         if i == 10:
             break
     return data
-

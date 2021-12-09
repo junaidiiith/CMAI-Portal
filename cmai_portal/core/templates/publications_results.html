@@ -24,13 +24,12 @@
         <section class="section-header">
 <!--            <form action="">-->
             <div class="container-fluid">
-              <div class="row" style="column-gap:40px;">
+              <div class="row" style="column-gap:20px;">
                       {% include 'sidebar.html' with form=form summary=summary search_query=search_query search_type=search_type %}
 
                 <div class="col" id="main">
                   <h1> Publications Results for "{{search_query}}"</h1>
-                    <h3>Showing results {{start}} - {{end}} </h3>
-                  {% include 'publications_results_table.html' with publications=results total_records=total_records %}
+                  {% include 'publications_results_table.html' with publications=results total_records=total_records start=start end=end %}
                 </div>
                 <nav aria-label="...">
                   <ul class="pagination justify-content-center">

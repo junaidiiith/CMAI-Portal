@@ -28,15 +28,18 @@ search_type_columns = {
 SOURCE_TITLE = 'SourceTitle'
 
 
-def get_records_by_column_value(column_name, value):
-    records = cmai_data[~cmai_data[column_name].isna()]
-    return records[records[column_name].apply(str.lower).str.contains(value.lower())]
+def get_records_by_column_value(column_name, value, dataset):
+    empty = dataset[dataset[column_name].isna()]
+    records = dataset[~dataset[column_name].isna()]
+    matched = records[records[column_name].apply(str.lower).str.contains(value.lower())]
+    results = pd.concat([matched, empty], ignore_index=True).drop_duplicates().reset_index(drop=True)
+    return results
 
 
-def get_records_by_column_values(column_name, values):
+def get_records_by_column_values(column_name, values, dataset):
     results = pd.DataFrame()
     for value in values:
-        records = get_records_by_column_value(column_name, value)
+        records = get_records_by_column_value(column_name, value, dataset)
         results = pd.concat([results, records], ignore_index=True).drop_duplicates().reset_index(drop=True)
     return results
 
@@ -49,41 +52,34 @@ def get_checked_values(values):
     return checked_values
 
 
-def get_records_by_taxonomies(taxonomies_data, checked=False):
-    results_intersection = pd.DataFrame()
+def get_records_by_taxonomies(taxonomies_data, dataset):
+    results = pd.DataFrame()
     for taxonomy_type, taxonomies in taxonomies_data.items():
         for taxonomy in taxonomies:
-            if taxonomy['operator']:
-                values = get_checked_values(taxonomy['values']) if checked else list(taxonomy['values'].keys())
-                records = get_records_by_column_values(taxonomy['name'], values)
-                if len(results_intersection) == 0:
-                    results_intersection = records
-                else:
-                    results_intersection = pd.merge(results_intersection, records, how='inner')
+            values = get_checked_values(taxonomy['values'])
+            records = get_records_by_column_values(taxonomy['name'], values, dataset)
+            if len(results) == 0:
+                results = records
+            else:
+                results = pd.merge(results, records, how='inner')
 
-    results_union = pd.DataFrame()
-    for taxonomy_type, taxonomies in taxonomies_data.items():
-        for taxonomy in taxonomies:
-            if not taxonomy['operator']:
-                values = get_checked_values(taxonomy['values']) if checked else list(taxonomy['values'].keys())
-                records = get_records_by_column_values(taxonomy['name'], values)
-                if len(results_union) == 0:
-                    results_union = records
-                else:
-                    results_union = pd.concat([results_union, records], ignore_index=True).drop_duplicates()\
-                        .reset_index(drop=True)
-    if len(results_intersection):
-        results = pd.merge(results_intersection, results_union, how='inner')
-    else:
-        results = results_union
     return results
 
 
-def get_records_by_year(gt_value=1980, lt_value=2021):
-    gt_records = cmai_data[cmai_data['Year'] >= gt_value]
-    lt_records = cmai_data[cmai_data['Year'] <= lt_value]
-    results = pd.merge(gt_records, lt_records, how='inner')
+def get_records_by_year(years, dataset):
+    results = pd.DataFrame()
+    for year, year_data in years['values'].items():
+        if year_data['checked']:
+            records = dataset[dataset['Year'] == int(year)]
+            results = pd.concat([results, records], ignore_index=True)\
+                .drop_duplicates().reset_index(drop=True)
     return results
+
+
+def get_records_by_countries(countries, dataset):
+    checked_countries = [country for country, country_data in countries['values'].items() if country_data['checked']]
+    records = get_records_by_column_values('Countries', checked_countries, dataset)
+    return records
 
 
 def get_records_by_keywords(search_query, search_type):
@@ -93,7 +89,7 @@ def get_records_by_keywords(search_query, search_type):
 
     results = pd.DataFrame()
     for column in search_type_columns[search_type]:
-        records = get_records_by_column_values(column, text_tokens)
+        records = get_records_by_column_values(column, text_tokens, cmai_data)
         results = pd.concat([results, records], ignore_index=True).drop_duplicates().reset_index(drop=True)
     return results
 
@@ -105,49 +101,86 @@ def present_in_request(taxonomy_value, request_dict):
     return False
 
 
-def get_taxonomies_count(results, request_taxonomies):
+def update_taxonomies_to_show(results, request_taxonomies):
     for taxonomy_type, taxonomies in request_taxonomies.items():
         for taxonomy in taxonomies:
-            for i, result in results.iterrows():
-                if not isinstance(result[taxonomy['name']], float):
-                    record_values = [value.strip() for value in result[taxonomy['name']].split(",")]
-                    for value in record_values:
-                        taxonomy['values'][value]['count'] += 1
+            for value, value_data in taxonomy['values'].items():
+                value_data['count'] = len(get_records_by_column_value(taxonomy['name'], value, results))
+                value_data['to_show'] = value_data['count'] != 0
+            taxonomy['count'] = sum(v['count'] for v in taxonomy['values'].values())
 
-    final_taxonomies = dict()
-    for taxonomy_type, taxonomies in request_taxonomies.items():
-        taxonomy_type_list = list()
+
+def update_non_taxonomies_count_to_show(results, non_taxonomies):
+    for year, year_data in non_taxonomies['years']['values'].items():
+        count = len(results[results['Year'] == int(year)])
+        year_data['count'] = count
+        year_data['to_show'] = count != 0
+
+    non_taxonomies['years']['count'] = sum(
+        [year_data['count'] for year, year_data in non_taxonomies['years']['values'].items()])
+
+    for country, country_data in non_taxonomies['countries']['values'].items():
+        count = len(get_records_by_column_value('Countries', country, results))
+        country_data['count'] = count
+        country_data['to_show'] = count != 0
+
+    non_taxonomies['countries']['count'] = sum(
+        [country_data['count'] for country, country_data in non_taxonomies['countries']['values'].items()])
+
+
+def update_taxonomies_to_check(results, all_taxonomies):
+    for taxonomy_type, taxonomies in all_taxonomies.items():
         for taxonomy in taxonomies:
-            temp_taxonomy = dict()
-            temp_taxonomy['count'] = sum(v['count'] for v in taxonomy['values'].values())
-            temp_taxonomy['name'] = taxonomy['name']
-            temp_taxonomy['operator'] = taxonomy['operator']
-            t_values = dict()
-            for k, v in taxonomy['values'].items():
-                if v['count']:
-                    t_values[k] = {
-                        "count": v['count'],
-                        "checked": v['checked']
-                    }
-
-            temp_taxonomy['values'] = t_values
-            taxonomy_type_list.append(temp_taxonomy)
-        final_taxonomies[taxonomy_type] = taxonomy_type_list
-    return final_taxonomies
+            for value, value_data in taxonomy['values'].items():
+                count = len(get_records_by_column_value(taxonomy['name'], value, results))
+                if value_data['checked']:
+                    value_data['checked'] = count != 0
+            taxonomy['count'] = sum(v['count'] for v in taxonomy['values'].values())
 
 
-def get_records(taxonomies, search_query, search_type, start_year, end_year):
-    records_by_keywords = get_records_by_keywords(search_query, search_type)
-    records_by_taxonomies = get_records_by_taxonomies(taxonomies)
-    records_by_taxonomies_checked = get_records_by_taxonomies(taxonomies, checked=True)
-    records_by_year = get_records_by_year(start_year, end_year)
-    results = pd.merge(records_by_keywords, records_by_taxonomies, how='inner')
-    results = pd.merge(results, records_by_year, how='inner')
-    results_checked = pd.merge(records_by_keywords, records_by_taxonomies_checked, how='inner')
-    results_checked = pd.merge(results_checked, records_by_year, how='inner')
-    taxonomies_count = get_taxonomies_count(results, taxonomies)
-    summary = create_results_summary(results)
-    return results_checked, summary, taxonomies_count
+def update_non_taxonomies_to_check(results, non_taxonomies):
+    for year, year_data in non_taxonomies['years']['values'].items():
+        count = len(results[results['Year'] == year])
+        year_data['checked'] = count != 0
+
+    for country, country_data in non_taxonomies['countries']['values'].items():
+        count = len(get_records_by_column_value('Countries', country, results))
+        country_data['checked'] = count != 0
+
+
+def merge_records(records_list):
+    results = records_list[0]
+    for records in records_list[1:]:
+        results = pd.merge(results, records, how='inner')
+    return results
+
+
+def get_records(taxonomies, non_taxonomies, search_query, search_type):
+    checked_records = list()
+    results_by_keywords = get_records_by_keywords(search_query, search_type)
+    checked_records.append(results_by_keywords)
+
+    # unchecked_records.append(get_records_by_taxonomies(taxonomies))
+    checked_records.append(get_records_by_taxonomies(taxonomies, results_by_keywords))
+
+    # unchecked_records.append(get_records_by_year(non_taxonomies['years']))
+    checked_records.append(get_records_by_year(non_taxonomies['years'], results_by_keywords))
+
+    # unchecked_records.append(get_records_by_countries(non_taxonomies['countries']))
+    checked_records.append(get_records_by_countries(non_taxonomies['countries'], results_by_keywords))
+
+    # results = merge_records(unchecked_records)
+    results_checked = merge_records(checked_records)
+
+    update_taxonomies_to_show(results_by_keywords, taxonomies)
+    update_non_taxonomies_count_to_show(results_by_keywords, non_taxonomies)
+
+    update_taxonomies_to_check(results_checked, taxonomies)
+    update_non_taxonomies_to_check(results_checked, non_taxonomies)
+
+    summary = create_results_summary(results_by_keywords)
+
+    return results_checked, summary, taxonomies, non_taxonomies
 
 
 def get_badges(result, badges_columns):
@@ -258,7 +291,7 @@ def create_results_summary(results):
     return {
         "affiliations_summary": authors_affiliations_summary,
         "doc_type_summary": doc_type_summary,
-        'years': {'name': 'Year', 'values': years}
+        'years': {'yearly_count': years}
     }
 
 

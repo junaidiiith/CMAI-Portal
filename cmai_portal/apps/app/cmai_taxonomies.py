@@ -25,19 +25,14 @@ def get_taxonomies():
     taxonomies = {"AI Filters": list(), "CM Filters": list(), "Others": list()}
     for column in columns[:4]:
         taxonomies['AI Filters'].append({'name': column,
-                                         'values': {value: {'count': 0, 'checked': True} for value in list(get_list(cmai_data[column])[1].keys())},
-                                         'count': 0,
-                                         'operator': False})
+                                         'values': {value: {'count': 0, 'checked': True, 'to_show': True} for value in list(get_list(cmai_data[column])[1].keys())},
+                                         'count': 0})
     for column in columns[4:6]:
         taxonomies['CM Filters'].append({'name': column,
-                                         'values': {value: {'count': 0, 'checked': True} for value in list(get_list(cmai_data[column])[1].keys())},
-                                         'count': 0,
-                                         'operator': False
-                                         })
+                                         'values': {value: {'count': 0, 'checked': True, 'to_show': True} for value in list(get_list(cmai_data[column])[1].keys())},
+                                         'count': 0})
     for column in columns[6:]:
         taxonomies['Others'].append({'name': column,
-                                     'values': {value: {'count': 0, 'checked': True} for value in list(get_list(cmai_data[column])[1].keys())},
-                                     'count': 0,
-                                     'operator': False
-                                     })
+                                     'values': {value: {'count': 0, 'checked': True, 'to_show': True} for value in list(get_list(cmai_data[column])[1].keys())},
+                                     'count': 0})
     return taxonomies

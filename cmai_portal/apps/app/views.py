@@ -27,9 +27,10 @@ def search_results(request):
     if request.method == "POST":
         request_input = process_request_parameters(request)
         search_type, search_query = request_input['search_type'], request_input['search_query']
-        request_input['taxonomies'] = get_taxonomies_based_on_request(request, search_query, search_type)
-        records, summary, taxonomy_count = search_records(request_input)
-        form = CompleteForm(taxonomy_count, search_query, searchFor)
+        request_input['taxonomies'], request_input['non_taxonomies'] = \
+            get_taxonomies_based_on_request(request, search_query, search_type)
+        records, summary, taxonomy_count, non_taxonomy_count = search_records(request_input)
+        form = CompleteForm(taxonomy_count, non_taxonomy_count, search_query, searchFor)
         context = {
             'results': records[:step],
             'start': 1,
@@ -46,9 +47,8 @@ def search_results(request):
             'search_query': search_query,
             'pages': range(1, (len(records)//step)+2)
         }
-        request.session[search_query.lower()+search_type] = {
+        request.session["navigation:"+search_query.lower()+search_type] = {
             'results': records,
-            'taxonomy_count': taxonomy_count,
             'summary': summary
         }
         results_template = results_template_map[search_type]
@@ -56,7 +56,7 @@ def search_results(request):
     if request.method == "GET":
         search_query, search_type, page_id = request.GET['query'], request.GET['search_type'], int(request.GET['page_index'])
         session_output = request.session.get(search_query.lower()+search_type)
-        form = CompleteForm(session_output['taxonomy_count'], search_query, search_type)
+        form = CompleteForm(session_output['taxonomies'], session_output['non-taxonomies'], search_query, search_type)
         records, summary = session_output['results'], session_output['summary']
         context = {
             'results': records[(page_id-1)*step:page_id*step-1],

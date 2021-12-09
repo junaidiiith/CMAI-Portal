@@ -1,4 +1,4 @@
- <div class="col-1">
+ <div class="col-2">
         <a href="/" class="d-flex align-items-center pb-3 mb-3 link-dark text-decoration-none border-bottom">
           <span class="fs-15 fw-semibold">Taxonomy Filters</span>
         </a>
@@ -12,8 +12,12 @@
             <span>Research Methods </span>
                 {% include 'taxonomy.html' with taxonomies=form.others %}
             <li class="border-top my-3"></li>
-            {% include 'non_taxonomy_filters.html' with entries=summary.years name="Start Year" id="sy"%}
+            <span>Year </span>
+            {% include 'non_taxonomy.html' with taxonomy=form.years %}
+            {% if countries == "true" %}
+            <span>Country </span>
+                {% include 'non_taxonomy.html' with taxonomy=form.countries %}
+            {% endif %}
 <!--            <li class="border-top my-3"></li>-->
-            {% include 'non_taxonomy_filters.html' with entries=summary.years name="End Year" id="ey"%}
         </ul>
 </div>
