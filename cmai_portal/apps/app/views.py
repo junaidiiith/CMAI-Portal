@@ -24,57 +24,60 @@ step = 10
 def search_results(request):
     context = {}
     results_template = "publications_results.html"
-    if request.method == "POST":
-        request_input = process_request_parameters(request)
-        search_type, search_query = request_input['search_type'], request_input['search_query']
-        request_input['taxonomies'], request_input['non_taxonomies'] = \
-            get_taxonomies_based_on_request(request, search_query, search_type)
-        records, summary, taxonomy_count, non_taxonomy_count = search_records(request_input)
-        form = CompleteForm(taxonomy_count, non_taxonomy_count, search_query, searchFor)
-        context = {
-            'results': records[:step],
-            'start': 1,
-            'end': min(step, len(records)),
-            'first': 1,
-            'last': (len(records)//step)+1,
-            'current': 1,
-            'previous': 1,
-            'next': min(2, len(records)//step),
-            'total_records': len(records),
-            'summary': summary,
-            'form': form,
-            'search_type': search_type,
-            'search_query': search_query,
-            'pages': range(1, (len(records)//step)+2)
-        }
-        request.session["navigation:"+search_query.lower()+search_type] = {
-            'results': records,
-            'summary': summary
-        }
-        results_template = results_template_map[search_type]
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            request_input = process_request_parameters(request)
+            search_type, search_query = request_input['search_type'], request_input['search_query']
+            request_input['taxonomies'], request_input['non_taxonomies'] = \
+                get_taxonomies_based_on_request(request, search_query, search_type)
+            records, summary, taxonomy_count, non_taxonomy_count = search_records(request_input)
+            form = CompleteForm(taxonomy_count, non_taxonomy_count, search_query, searchFor)
+            context = {
+                'user': request.user,
+                'results': records[:step],
+                'start': 1,
+                'end': min(step, len(records)),
+                'first': 1,
+                'last': (len(records)//step)+1,
+                'current': 1,
+                'previous': 1,
+                'next': min(2, len(records)//step),
+                'total_records': len(records),
+                'summary': summary,
+                'form': form,
+                'search_type': search_type,
+                'search_query': search_query,
+                'pages': range(1, (len(records)//step)+2)
+            }
+            request.session["navigation:"+search_query.lower()+search_type] = {
+                'results': records,
+                'summary': summary
+            }
+            results_template = results_template_map[search_type]
 
-    if request.method == "GET":
-        search_query, search_type, page_id = request.GET['query'], request.GET['search_type'], int(request.GET['page_index'])
-        session_output = request.session.get(search_query.lower()+search_type)
-        form = CompleteForm(session_output['taxonomies'], session_output['non-taxonomies'], search_query, search_type)
-        records, summary = session_output['results'], session_output['summary']
-        context = {
-            'results': records[(page_id-1)*step:page_id*step-1],
-            'start': ((page_id-1)*step)+1,
-            'end': min(page_id*step, len(records)),
-            'first': 1,
-            'last': (len(records)//step)+1,
-            'current': page_id,
-            'previous': page_id-1,
-            'next': min(page_id+1, len(records) // step),
-            'total_records': len(records),
-            'summary': summary,
-            'form': form,
-            'search_type': search_type,
-            'search_query': search_query,
-            'pages': range(1, (len(records)//step)+2)
-        }
-        results_template = results_template_map[search_type]
+        if request.method == "GET":
+            search_query, search_type, page_id = request.GET['query'], request.GET['search_type'], int(request.GET['page_index'])
+            session_output = request.session.get(search_query.lower()+search_type)
+            form = CompleteForm(session_output['taxonomies'], session_output['non-taxonomies'], search_query, search_type)
+            records, summary = session_output['results'], session_output['summary']
+            context = {
+                'user': request.user,
+                'results': records[(page_id-1)*step:page_id*step-1],
+                'start': ((page_id-1)*step)+1,
+                'end': min(page_id*step, len(records)),
+                'first': 1,
+                'last': (len(records)//step)+1,
+                'current': page_id,
+                'previous': page_id-1,
+                'next': min(page_id+1, len(records) // step),
+                'total_records': len(records),
+                'summary': summary,
+                'form': form,
+                'search_type': search_type,
+                'search_query': search_query,
+                'pages': range(1, (len(records)//step)+2)
+            }
+            results_template = results_template_map[search_type]
     html_template = loader.get_template(results_template)
     return HttpResponse(html_template.render(context, request))
 

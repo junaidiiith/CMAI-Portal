@@ -30,7 +30,7 @@
                                     {% endif %}                                  
                                 </span>
                             </div>
-                            <form method="post" action="" action="#">
+                            <form method="post" action="">
 
                                 {% csrf_token %}
 
@@ -46,7 +46,7 @@
                                 <div class="form-group mb-4">
                                     <label for="email">Email</label>
                                     <div class="input-group">
-                                        <span class="input-group-text" id="basic-addon3"><span class="fas fa-envelope"></span></span>
+                                        <span class="input-group-text" id="basic-addon3"><span class="fas fa-envelope" id="email"></span></span>
                                         {{ form.email }}
                                     </div>  
                                     <span class="text-error">{{ form.email.errors }}</span>
@@ -57,15 +57,15 @@
                                     <div class="form-group mb-4">
                                         <label for="password">Password</label>
                                         <div class="input-group">
-                                            <span class="input-group-text" id="basic-addon4"><span class="fas fa-unlock-alt"></span></span>
+                                            <span class="input-group-text" id="basic-addon4"><span class="fas fa-unlock-alt" id="password"></span></span>
                                             {{ form.password1 }}
                                         </div>  
                                         <span class="text-error">{{ form.password2.errors }}</span>
                                     </div>
                                     <div class="form-group mb-4">
-                                        <label for="password">Password Check</label>
+                                        <label for="password1">Password Check</label>
                                         <div class="input-group">
-                                            <span class="input-group-text" id="basic-addon4"><span class="fas fa-unlock-alt"></span></span>
+                                            <span class="input-group-text" id="basic-addon4"><span class="fas fa-unlock-alt" id="password1"></span></span>
                                             {{ form.password2 }}
                                         </div>  
                                         <span class="text-error">{{ form.password2.errors }}</span>
@@ -87,14 +87,6 @@
                             </form>
                             
                             <br />
-
-                            <div class="d-flex justify-content-center align-items-center mt-4">
-                                <span class="fw-normal">
-                                    &copy; Themesberg - coded by 
-                                    <a href="https://appseed.us" target="_blank"
-                                       class="fw-bold text-underline">AppSeed</a>
-                                </span>
-                            </div>
 
                         </div>
                     </div>

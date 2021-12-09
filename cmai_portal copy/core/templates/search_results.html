@@ -1,0 +1,71 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Results {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main>
+        <!-- Hero -->
+        <nav class="navbar fixed-top navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">CMAI Web Knowledge Base</a>
+            <form class="d-flex" action="{% url 'search_results' %}" method="post" enctype='multipart/form-data'>
+                {% csrf_token %}
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name='search-box'>
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </nav>
+        <section class="section-header">
+            <form action="">
+                <div class="container-fluid">
+                  <div class="row">
+                          {% include 'sidebar.html' with form=form summary=summary %}
+
+                    <div class="col" id="main">
+                        {% if search_type == "Publications" %}
+                            <h1> Publications Results for "{{search_query}}"</h1>
+                            {% include 'publications_results_table.html' with publications=results %}
+                        {% elif search_type == "Journals & Conferences" %}
+                            <h1> Journals & Conferences Results for "{{search_query}}"</h1>
+                            {% include 'venue_results.html' with venues=results %}
+                        {% elif search_type == "Authors" %}
+                            <h1> Authors Results for "{{search_query}}"</h1>
+                            {% include 'authors_results.html' with authors=results %}
+                        {% else %}
+                            {% include 'publications_results_table.html' with publications=results %}
+                        {% endif %}
+                    </div>
+                  </div>
+                </div>
+            </form>
+            <nav aria-label="...">
+              <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                  <span class="page-link">Previous</span>
+                </li>
+                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                <li class="page-item active" aria-current="page">
+                  <span class="page-link">2</span>
+                </li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">4</a></li>
+                <li class="page-item"><a class="page-link" href="#">5</a></li>
+                <li class="page-item"><a class="page-link" href="#">6</a></li>
+                <li class="page-item">
+                  <a class="page-link" href="#">Next</a>
+                </li>
+              </ul>
+            </nav>
+            <!-- Page content wrapper-->
+        <!-- Bootstrap core JS-->
+        </section>
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

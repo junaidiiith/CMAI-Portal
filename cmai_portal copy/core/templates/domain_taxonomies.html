@@ -1,0 +1,42 @@
+<button type="button" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+    {{taxonomy.name}}
+</button>
+<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+    {% for value in taxonomy.values %}
+        <li>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="{{taxonomy.name}}:{{value.label}}" id="{{value}}" checked>
+                <label class="form-check-label" for="{{value}}">
+                    {{value.label}}
+                </label>
+            </div>
+        </li>
+    {% endfor %}
+    <li>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="all:{{taxonomy.name}}" id="selectAll"
+                   onClick="toggle(this, '{{taxonomy.name}}')" checked>
+            <label class="form-check-label" for="selectAll">
+                Select All
+            </label>
+        </div>
+    </li>
+    <li>
+        <div class="form-check form-switch">
+            <input name="operator:{{taxonomy.name}}" class="form-check-input" type="checkbox" id="{{taxonomy.operator}}">
+            <label class="form-check-label" for="{{taxonomy.operator}}">AND/OR results with other taxonomies</label>
+        </div>
+    </li>
+    <li>
+        <h6><small class="text-muted">Default (Match with AND operator) </small></h6>
+    </li>
+</ul>
+
+<script language="JavaScript">
+function toggle(source, taxonomyName) {
+  checkboxes = document.querySelectorAll('input[name^="'+ taxonomyName +'"]');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    checkboxes[i].checked = source.checked;
+  }
+}
+</script>

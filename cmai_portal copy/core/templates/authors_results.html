@@ -1,0 +1,38 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Results {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<main>
+        <nav class="navbar fixed-top navbar-dark bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">CMAI Web Knowledge Base</a>
+            <form class="d-flex" action="{% url 'search_results' %}?search_type=Authors" method="post" enctype='multipart/form-data'>
+                {% csrf_token %}
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name='search-box'>
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </nav>
+        <section class="section-header">
+            <div class="container-fluid">
+              <div class="row">
+                      {% include 'sidebar.html' with form=form summary=summary countries="true" %}
+                <div class="col" id="main">
+                    <h1> Authors Results for "{{search_query}}"</h1>
+                    {% include 'authors_results_data.html' with authors=results total_records=total_records search_query=search_query search_type=search_type %}
+                </div>
+              </div>
+            </div><!-- Page content wrapper-->
+        <!-- Bootstrap core JS-->
+        </section>
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

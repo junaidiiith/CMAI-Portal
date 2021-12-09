@@ -1,0 +1,55 @@
+<!--             <div class="container">-->
+                 <div class="row justify-content-center">
+                    <div class="col-lg-12">
+                        <div class="mb-5">
+                            {% if publications %}
+                                <h3>Showing results {{start}} - {{end}} </h3>
+                                <h2>Publications Found: {{total_records}} </h2>
+                                <table class="table" id="recordsTable">
+                                    <tr>
+                                        <th style="width:5%" scope="col" id="SrNo">SR.No</th>
+                                        <th style="width:30%" scope="col" id="Title">Title</th>
+                                        <th style="width:5%" scope="col" id="Year">Year</th>
+                                        <th style="width:20%" scope="col" id="Authors">Authors</th>
+                                        <th style="width:10%" scope="col" id="Abstract">Abstract</th>
+                                        <th style="width:30%" scope="col" id="badges">Badges</th>
+                                    </tr>
+                                    {% for publication in publications %}
+                                        <tr>
+                                            <td scope="col" id="{{publication.index}}">{{publication.index}}</td>
+                                            <td scope="col" id="{{publication.Title}}"><a href="{{publication.DOI}}"><strong>{{publication.Title}}</strong></a></td>
+                                            <td scope="col" id="{{publication.Year}}">{{publication.Year}}</td>
+                                            <td scope="col" id="{{publication.Authors}}">{{publication.Authors}}</td>
+                                            <td scope="col" id="{{publication.Abstract}}">
+                                                <button type="button" class="btn btn-secondary btn-sm mb-3" data-bs-container="body"
+                                                    data-bs-toggle="popover" data-bs-placement="top" title="Abstract"
+                                                    data-bs-content="{{publication.Abstract}}">
+                                                    Click to see full abstract
+                                                </button>
+                                            </td>
+                                            <td scope="col" id="{{publication.badges}}">
+                                                {% for badge in publication.badges.AI %}
+                                                    <span class="badge bg-success">{{badge}}</span>
+            <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
+                                                {% endfor %}
+                                                <br/>
+                                                {% for badge in publication.badges.CM %}
+                                                    <span class="badge bg-warning">{{badge}}</span>
+            <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
+                                                {% endfor %}
+                                                <br/>
+                                                {% for badge in publication.badges.Others %}
+                                                    <span class="badge bg-danger">{{badge}}</span>
+            <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </table>
+                            {% else %}
+                           <h2>Sorry! No Publications found </h2>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+<!--            </div>-->
