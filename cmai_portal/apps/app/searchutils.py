@@ -187,7 +187,7 @@ def get_badges(result, badges_columns):
     badges = {'AI': list(), 'CM': list(), 'Others': list()}
     for column in badges_columns:
         if not isinstance(result[column], float):
-            badges[badges_categories[column]] += [badge.strip() for badge in result[column].split(',')]
+            badges[badges_categories[column]] += list(set([badge.strip() for badge in result[column].split(',')]))
     return badges
 
 

@@ -1,76 +1,54 @@
 <div class="row justify-content-center">
-                    <div class="col-lg-12">
-                        <div class="mb-5">
-                            {% if authors %}
-                                <h4>Authors Found: {{total_records}} </h4>
-                                {% for author in authors %}
-                                    <h3>{{author.name}}:{{author.publications|length}} </h3>
-                                    <h4>Publications by {{author.name}}</h4>
-                                    <div class="row">
-                                        <div class="col-12 mb-5">
-                                            {% for publication in author.publications %}
-                                                <div class="card shadow mb-6">
-                                                    <div class="card-body px-4 py-4 text-center text-md-left">
-                                                        <div class="row align-items-center">
-                                                            <div class="row">
-                                                                <div class="col-md-8">
-                                                                    <h5 class="mb-3"><a href="{{publication.DOI}}"><strong>{{publication.Title}}</strong></a>, {{publication.Year}}</h5>
-                                                                    <h5> <small class="text-muted">{{publication.DocumentType}}, {{publication.SourceTitle}}</small></h5>
-                                                                    <p class="mb-0">
-                                                                        {% for affiliation in publication.affiliations %}
-                                                                            <ul>
-                                                                    <li> {% if affiliation.searched_author %} <strong>{{affiliation.author}}</strong> {% else %} {{affiliation.author}} {% endif %} -
-                                                                                    {% for institute_country in affiliation.institute_countries %}
-                                                                                    <i>{{institute_country.university}}, {{institute_country.country}}</i>
-                                                                                    {% endfor %}
-                                                                                </li>
-                                                                            </ul>
-                                                                        {% endfor %}
-                                                                    </p>
-                                                                </div>
-                                                                <div class="col">
-                                                                    {% for badge in publication.badges.AI %}
-                                                                        <span class="badge bg-success">{{badge}}</span>
-                                <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
-                                                                    {% endfor %}
-                                                                    <br/>
-                                                                    {% for badge in publication.badges.CM %}
-                                                                        <span class="badge bg-warning">{{badge}}</span>
-                                <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
-                                                                    {% endfor %}
-                                                                    <br/>
-                                                                    {% for badge in publication.badges.Others %}
-                                                                        <span class="badge bg-danger">{{badge}}</span>
-                                <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
-                                                                    {% endfor %}
-                                                                </div>
-                                                            </div>
-                                                             <div class="accordion" id="accordionExample1">
-                                                                <div class="accordion-item">
-                                                                    <h2 class="accordion-header" id="headingOne">
-                                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                                                            data-bs-target="#collapseOne{{publication.hash}}" aria-expanded="true" aria-controls="collapseOne{{publication.has}}">
-                                                                            Click to see full abstract
-                                                                        </button>
-                                                                    </h2>
-                                                                    <div id="collapseOne{{publication.hash}}" class="accordion-collapse collapse" aria-labelledby="headingOne{{publication.hash}}"
-                                                                        data-bs-parent="#accordionExample1">
-                                                                        <div class="accordion-body">
-                                                                            {{publication.Abstract}}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+    <div class="col-lg-12">
+        <div class="mb-5">
+            {% if authors %}
+                <h4>Authors Found: {{authors|length}} </h4>
+                {% for author in authors %}
+                    <h3>{{author.name}} - {{author.publications|length}} </h3>
+                    <h4>Publications by {{author.name}}</h4>
+                    <div class="row">
+                        <div class="col-12 mb-5">
+                            <div class="card shadow mb-6">
+                                <div class="card-body px-4 py-4 text-center text-md-left">
+                                    <div class="row align-items-center">
+                                        {% for publication in author.publications %}
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <h5 class="mb-3"><a href="{{publication.DOI}}"><strong>{{publication.Title}}</strong></a>, {{publication.Year}}</h5>
+                                                    <h5> <small class="text-muted">{{publication.DocumentType}}, {{publication.SourceTitle}}</small></h5>
+                                                    <p class="mb-0">
+                                                        {% for affiliation in publication.affiliations %}
+                                                            {% if affiliation.searched_author %} <strong>{{affiliation.author}}</strong> {% else %} {{affiliation.author}} {% endif %}
+                                                        {% endfor %}
+                                                    </p>
                                                 </div>
-                                            {% endfor %}
-                                        </div>
+                                                <div class="col">
+                                                    {% for badge in publication.badges.AI %}
+                                                        <span class="badge bg-success">{{badge}}</span>
+                <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
+                                                    {% endfor %}
+                                                    <br/>
+                                                    {% for badge in publication.badges.CM %}
+                                                        <span class="badge bg-warning">{{badge}}</span>
+                <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
+                                                    {% endfor %}
+                                                    <br/>
+                                                    {% for badge in publication.badges.Others %}
+                                                        <span class="badge bg-danger">{{badge}}</span>
+                <!--                                            <button class="btn btn-sm btn-outline-primary" type="button">{{badge}}</button>-->
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
                                     </div>
-                                {% endfor %}
-                            {% else %}
-                           <h2>Sorry! No Authors found </h2>
-                            {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endfor %}
+            {% else %}
+            <h2>Sorry! No Authors found </h2>
+            {% endif %}
+        </div>
+    </div>
+</div>
