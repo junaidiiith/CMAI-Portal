@@ -20,36 +20,16 @@
           </div>
         </nav>
         <section class="section-header">
-            <form action="">
-                <div class="container-fluid">
-                  <div class="row">
-                          {% include 'sidebar.html' with form=form summary=summary %}
+            <div class="container-fluid">
+              <div class="row">
+                      {% include 'sidebar.html' with form=form summary=summary %}
 
-                    <div class="col" id="main">
-                        <h1> Authors Results for "{{search_query}}"</h1>
-                        {% include 'venue_results_data.html' with venues=results total_records=total_records search_query=search_query search_type=search_type %}
-                    </div>
-                  </div>
+                <div class="col" id="main">
+                    <h1> Authors Results for "{{search_query}}"</h1>
+                    {% include 'venue_results_data.html' with venues=results total_records=total_records search_query=search_query search_type=search_type %}
                 </div>
-            </form>
-            <nav aria-label="...">
-              <ul class="pagination justify-content-center">
-                <li class="page-item disabled">
-                  <span class="page-link">Previous</span>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                <li class="page-item active" aria-current="page">
-                  <span class="page-link">2</span>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">4</a></li>
-                <li class="page-item"><a class="page-link" href="#">5</a></li>
-                <li class="page-item"><a class="page-link" href="#">6</a></li>
-                <li class="page-item">
-                  <a class="page-link" href="#">Next</a>
-                </li>
-              </ul>
-            </nav>
+              </div>
+            </div>
             <!-- Page content wrapper-->
         <!-- Bootstrap core JS-->
         </section>

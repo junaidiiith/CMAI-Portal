@@ -4,8 +4,8 @@
             {% if authors %}
                 <h4>Authors Found: {{authors|length}} </h4>
                 {% for author in authors %}
-                    <h3>{{author.name}} - {{author.publications|length}} </h3>
-                    <h4>Publications by {{author.name}}</h4>
+                    <h3>{{author.name}} </h3>
+                    <h4>Publications - {{author.publications|length}}</h4>
                     <div class="row">
                         <div class="col-12 mb-5">
                             <div class="card shadow mb-6">

@@ -4,8 +4,8 @@
                             {% if venues %}
                                 <h4>Venues Found: {{venues|length}} </h4>
                                 {% for venue in venues %}
-                                    <h3>{{venue.name}} - {{venue.publications|length}}</h3>
-                                    <h4>Publications</h4>
+                                    <h3>{{venue.name}}</h3>
+                                    <h4>Publications - {{venue.publications|length}}</h4>
                                     <div class="row">
                                         <div class="col-12 mb-5">
                                             <div class="card shadow mb-6">
