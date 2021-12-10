@@ -32,22 +32,28 @@ def search_results(request):
             get_taxonomies_based_on_request(request, search_query, search_type)
         records, summary, taxonomy_count, non_taxonomy_count = search_records(request_input)
         form = CompleteForm(taxonomy_count, non_taxonomy_count, search_query, searchFor)
+
+        start, end = 1, min(step, len(records))
+        first, last = 1, min(step, (len(records)//step)+1)
+        current, next_, previous = 1, min(2, len(records)//step), 1
+        pages_ = range(1, min(last, first+step+1))
+
         context = {
             'user': request.user,
             'results': records[:step],
-            'start': 1,
+            'start': start,
             'end': min(step, len(records)),
-            'first': 1,
-            'last': (len(records)//step)+1,
-            'current': 1,
-            'previous': 1,
-            'next': min(2, len(records)//step),
+            'first': first,
+            'last': last,
+            'current': current,
+            'previous': previous,
+            'next': next_,
             'total_records': len(records),
             'summary': summary,
             'form': form,
             'search_type': search_type,
             'search_query': search_query,
-            'pages': range(1, (len(records)//step)+2)
+            'pages': pages_
         }
         request.session[NAVIGATION_KEY + search_query.lower()+search_type] = {
             'results': records,
@@ -64,22 +70,31 @@ def search_results(request):
         form = CompleteForm(session_output[TAXONOMIES], session_output[NON_TAXONOMIES], search_query, search_type)
         navigation_session_data = request.session[NAVIGATION_KEY + search_query.lower()+search_type]
         records, summary = navigation_session_data['results'], navigation_session_data['summary']
+
+        start, end = ((page_id-1)*step)+1 if page_id else 1, min(page_id*step, len(records)) \
+            if page_id else min(step, len(records))
+        first, last = 1, min(page_id+step, (len(records)//step)+1)
+        current = page_id if page_id else 1
+        next_ = min(page_id+1, len(records) // step) if page_id else min(2, len(records)//step)
+        previous = page_id-1 if page_id else 1
+        pages_ = range(1, min(last, page_id + step if page_id else 11))
+
         context = {
             'user': request.user,
             'results': records[(page_id-1)*step:page_id*step-1] if page_id else records[:step],
-            'start': ((page_id-1)*step)+1 if page_id else 1,
-            'end': min(page_id*step, len(records)) if page_id else min(step, len(records)),
+            'start': start,
+            'end': end,
             'first': 1,
-            'last': (len(records)//step)+1,
-            'current': page_id if page_id else 1,
-            'previous': page_id-1 if page_id else 1,
-            'next': min(page_id+1, len(records) // step) if page_id else min(2, len(records)//step),
+            'last': min(page_id+step, (len(records)//step)+1),
+            'current': current,
+            'previous': previous,
+            'next': next_,
             'total_records': len(records),
             'summary': summary,
             'form': form,
             'search_type': search_type,
             'search_query': search_query,
-            'pages': range(1, (len(records)//step)+2)
+            'pages': pages_
         }
         results_template = results_template_map[search_type]
     html_template = loader.get_template(results_template)

@@ -34,19 +34,20 @@
                   <h1> Publications Results for "{{search_query}}"</h1>
                   {% include 'publications_results_table.html' with publications=results total_records=total_records start=start end=end %}
                 </div>
-                <nav aria-label="...">
-                  <ul class="pagination justify-content-center">
-                    <li class="page-item {% if current == first %} disabled {% endif %}">
-                      <a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=previous search_type='Publications' %}"><span class="page-link">Previous</span></a>
-                    </li>
-                      {% for page in pages %}
-                            <li class="page-item {% if page == current %} active {% endif %}"><a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=page search_type='Publications' %}"><span class="page-link">{{page}}</span></a></li>
-                      {% endfor %}
-                    <li class="page-item {% if current == last %} disabled {% endif %}">
-                      <a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=next search_type='Publications' %}"><span class="page-link">Next</span></a>
-                    </li>
-                  </ul>
-                </nav>
+                  {% include 'pagination_nav.html' with current=current start=start first=first last=last previous=previous pages=pages st=search_type %}
+<!--                <nav aria-label="...">-->
+<!--                  <ul class="pagination justify-content-center">-->
+<!--                    <li class="page-item {% if current == first %} disabled {% endif %}">-->
+<!--                      <a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=previous search_type='Publications' %}">Previous</a>-->
+<!--                    </li>-->
+<!--                      {% for page in pages %}-->
+<!--                            <li class="page-item {% if page == current %} active {% endif %}"><a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=page search_type='Publications' %}">{{page}}</a></li>-->
+<!--                      {% endfor %}-->
+<!--                    <li class="page-item {% if current == last %} disabled {% endif %}">-->
+<!--                      <a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=next search_type='Publications' %}">Next</a>-->
+<!--                    </li>-->
+<!--                  </ul>-->
+<!--                </nav>-->
               </div>
             </div>
 <!--            </form>-->
