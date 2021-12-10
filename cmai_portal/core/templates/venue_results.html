@@ -6,7 +6,7 @@
 {% block stylesheets %}{% endblock stylesheets %}
 
 {% block content %}
-
+{% load urlparams %}
 <main>
         <!-- Hero -->
         <nav class="navbar fixed-top navbar-dark bg-dark">
@@ -17,6 +17,9 @@
               <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name='search-box'>
               <button class="btn btn-outline-success" type="submit">Search</button>
             </form>
+<!--              {% if user.is_authenticated %}-->
+<!--                <a href="{% url 'logout' %}?next={% url 'login' %}"><button class="btn btn btn-outline-success">Logout</button></a>-->
+<!--              {% endif %}-->
           </div>
         </nav>
         <section class="section-header">
@@ -25,11 +28,24 @@
                       {% include 'sidebar.html' with form=form summary=summary %}
 
                 <div class="col" id="main">
-                    <h1> Authors Results for "{{search_query}}"</h1>
+                    <h1> Venue Results for "{{search_query}}"</h1>
                     {% include 'venue_results_data.html' with venues=results total_records=total_records search_query=search_query search_type=search_type %}
                 </div>
               </div>
             </div>
+            <nav aria-label="...">
+              <ul class="pagination justify-content-center">
+                <li class="page-item {% if current == first %} disabled {% endif %}">
+                  <a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=previous search_type='Venues' %}"><span class="page-link">Previous</span></a>
+                </li>
+                  {% for page in pages %}
+                        <li class="page-item {% if page == current %} active {% endif %}"><a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=page search_type='Venues' %}"><span class="page-link">{{page}}</span></a></li>
+                  {% endfor %}
+                <li class="page-item {% if current == last %} disabled {% endif %}">
+                  <a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=next search_type='Venues' %}"><span class="page-link">Next</span></a>
+                </li>
+              </ul>
+            </nav>
             <!-- Page content wrapper-->
         <!-- Bootstrap core JS-->
         </section>

@@ -1,8 +1,9 @@
+{% load urlparams %}
 <div class="row justify-content-center">
     <div class="col-lg-12">
         <div class="mb-5">
             {% if authors %}
-                <h4>Authors Found: {{authors|length}} </h4>
+                <h4>Authors Found: {{total_records}} </h4>
                 {% for author in authors %}
                     <h3>{{author.name}} </h3>
                     <h4>Publications - {{author.publications|length}}</h4>

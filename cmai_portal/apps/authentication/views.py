@@ -20,7 +20,7 @@ def login_view(request):
             username = form.cleaned_data.get("username")
             password = form.cleaned_data.get("password")
             user = authenticate(username=username, password=password)
-            if user is not None:
+            if user is not None and user.is_superuser:
                 login(request, user)
                 return redirect("/")
             else:

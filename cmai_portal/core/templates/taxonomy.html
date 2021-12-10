@@ -5,7 +5,7 @@
         <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#{{taxonomy.id}}-collapse" aria-expanded="false">
             {{taxonomy.name}} <span class="badge bg-secondary">{{taxonomy.count}}</span>
         </button>
-        <div class="collapse" id="{{taxonomy.id}}-collapse" style="overflow-y:scroll;">
+        <div class="collapse" id="{{taxonomy.id}}-collapse">
             <form action="{% url 'search_results' %}{% urlparams search_query=search_query search_type=search_type %}" method="post" enctype='multipart/form-data'>
             {% csrf_token %}
               <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">

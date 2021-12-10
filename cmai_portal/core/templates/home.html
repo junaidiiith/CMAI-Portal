@@ -10,7 +10,7 @@
           <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'home' %}">CMAI Web Knowledge Base</a>
               {% if user.is_authenticated %}
-                <button class="btn btn btn-outline-success"><a href="{% url 'logout' %}"> </a>Logout</button>
+                <a href="{% url 'logout' %}?next={% url 'login' %}"><button class="btn btn btn-outline-success">Logout {{user.username}}</button></a>
               {% else %}
                 <button class="btn btn btn-outline-success"><a href="{% url 'login' %}"> </a>Sign In</button>
                 <button class="btn btn btn-outline-success"><a href="{% url 'register' %}"> </a>Sign Up</button>
@@ -29,8 +29,8 @@
                                     <label for="search-box"></label>
                                     <div class="input-group">
                                         <input id="search-box" type="text" name='search-box' class="form-control"
-                                               placeholder="Search" aria-label="Search" aria-describedby="basic-addon2">
-                                        <button type="submit" class="input-group-text" id="basic-addon2"><span class="fas fa-search"></span></button>
+                                               placeholder="Search publications, venues, authors" aria-label="Search" aria-describedby="basic-addon2">
+                                        <button type="submit" class="input-group-text" id="basic-addon2">Search</button>
                                     </div>
                                 </div>
                                 {% include 'search_types.html' with search_types=search_types %}

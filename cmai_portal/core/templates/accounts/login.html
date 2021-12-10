@@ -1,6 +1,6 @@
 {% extends "layouts/base-fullscreen.html" %}
 
-{% block title %} Sign IN {% endblock %} 
+{% block title %} Sign In {% endblock %}
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}{% endblock stylesheets %}
@@ -8,9 +8,6 @@
 {% block content %}
 
     <main>
-
-        {% include 'includes/preloader.html' %}
-
         <!-- Section -->
         <section class="min-vh-100 d-flex align-items-center section-image overlay-soft-dark">
             <div class="container">
@@ -60,7 +57,7 @@
                                               Remember me
                                             </label>
                                         </div>
-                                        <div><a href="{% url 'register' %}" class="text-right">Register</a></div>
+<!--                                        <div><a href="{% url 'register' %}" class="text-right">Register</a></div>-->
                                     </div>
                                 </div>
                                 <div class="d-grid">

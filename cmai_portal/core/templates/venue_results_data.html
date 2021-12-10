@@ -1,8 +1,9 @@
+{% load urlparams %}
  <div class="row justify-content-center">
                     <div class="col-lg-12">
                         <div class="mb-5">
                             {% if venues %}
-                                <h4>Venues Found: {{venues|length}} </h4>
+                                <h4>Venues Found: {{total_records}} </h4>
                                 {% for venue in venues %}
                                     <h3>{{venue.name}}</h3>
                                     <h4>Publications - {{venue.publications|length}}</h4>

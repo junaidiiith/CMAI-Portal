@@ -26,14 +26,17 @@ search_type_columns = {
 }
 
 SOURCE_TITLE = 'SourceTitle'
+HASH = 'hash'
 
 
-def get_records_by_column_value(column_name, value, dataset):
+def get_records_by_column_value(column_name, value, dataset, allow_empty=True):
     empty = dataset[dataset[column_name].isna()]
     records = dataset[~dataset[column_name].isna()]
     matched = records[records[column_name].apply(str.lower).str.contains(value.lower())]
-    results = pd.concat([matched, empty], ignore_index=True).drop_duplicates().reset_index(drop=True)
-    return results
+    if allow_empty:
+        results = pd.concat([matched, empty], ignore_index=True).drop_duplicates().reset_index(drop=True)
+        return results
+    return matched
 
 
 def get_records_by_column_values(column_name, values, dataset):
@@ -88,6 +91,9 @@ def get_records_by_keywords(search_query, search_type):
         text_tokens = [word for word in text_tokens if word not in stopwords.words() and word.isalpha()]
 
     results = pd.DataFrame()
+    if not text_tokens:
+        return pd.concat([results, cmai_data], ignore_index=True).drop_duplicates().reset_index(drop=True)
+
     for column in search_type_columns[search_type]:
         records = get_records_by_column_values(column, text_tokens, cmai_data)
         results = pd.concat([results, records], ignore_index=True).drop_duplicates().reset_index(drop=True)
@@ -101,51 +107,59 @@ def present_in_request(taxonomy_value, request_dict):
     return False
 
 
+def get_final_set_count(record_hash_count):
+    final_set = set()
+    for key, hashes_set in record_hash_count.items():
+        final_set = final_set.union(hashes_set)
+    return len(final_set)
+
+
 def update_taxonomies_to_show(results, request_taxonomies):
     for taxonomy_type, taxonomies in request_taxonomies.items():
         for taxonomy in taxonomies:
+            record_hash_count = dict()
             for value, value_data in taxonomy['values'].items():
-                value_data['count'] = len(get_records_by_column_value(taxonomy['name'], value, results))
+                records = get_records_by_column_value(taxonomy['name'], value, results, allow_empty=False)
+                value_data['count'] = len(records)
                 value_data['to_show'] = value_data['count'] != 0
-            taxonomy['count'] = sum(v['count'] for v in taxonomy['values'].values())
+                record_hash_count[value] = set(records[HASH])
+            taxonomy['count'] = get_final_set_count(record_hash_count)
 
 
-def update_non_taxonomies_count_to_show(results, non_taxonomies):
+def update_non_taxonomies_to_show(results, non_taxonomies):
+    record_hash_count = dict()
     for year, year_data in non_taxonomies['years']['values'].items():
-        count = len(results[results['Year'] == int(year)])
+        records = results[results['Year'] == int(year)]
+        count = len(records)
         year_data['count'] = count
         year_data['to_show'] = count != 0
-
-    non_taxonomies['years']['count'] = sum(
-        [year_data['count'] for year, year_data in non_taxonomies['years']['values'].items()])
+        record_hash_count[year] = set(records[HASH])
+    non_taxonomies['years']['count'] = get_final_set_count(record_hash_count)
 
     for country, country_data in non_taxonomies['countries']['values'].items():
-        count = len(get_records_by_column_value('Countries', country, results))
+        records = get_records_by_column_value('Countries', country, results)
+        count = len(records)
         country_data['count'] = count
         country_data['to_show'] = count != 0
+        record_hash_count[country] = set(records[HASH])
 
-    non_taxonomies['countries']['count'] = sum(
-        [country_data['count'] for country, country_data in non_taxonomies['countries']['values'].items()])
+    non_taxonomies['countries']['count'] = get_final_set_count(record_hash_count)
 
 
-def update_taxonomies_to_check(results, all_taxonomies):
+def update_taxonomies_to_check(all_taxonomies):
     for taxonomy_type, taxonomies in all_taxonomies.items():
         for taxonomy in taxonomies:
             for value, value_data in taxonomy['values'].items():
-                count = len(get_records_by_column_value(taxonomy['name'], value, results))
                 if value_data['checked']:
-                    value_data['checked'] = count != 0
-            taxonomy['count'] = sum(v['count'] for v in taxonomy['values'].values())
+                    value_data['checked'] = value_data['count'] != 0
 
 
-def update_non_taxonomies_to_check(results, non_taxonomies):
+def update_non_taxonomies_to_check(non_taxonomies):
     for year, year_data in non_taxonomies['years']['values'].items():
-        count = len(results[results['Year'] == year])
-        year_data['checked'] = count != 0
+        year_data['checked'] = year_data['count'] != 0
 
     for country, country_data in non_taxonomies['countries']['values'].items():
-        count = len(get_records_by_column_value('Countries', country, results))
-        country_data['checked'] = count != 0
+        country_data['checked'] = country_data['count'] != 0
 
 
 def merge_records(records_list):
@@ -173,10 +187,10 @@ def get_records(taxonomies, non_taxonomies, search_query, search_type):
     results_checked = merge_records(checked_records)
 
     update_taxonomies_to_show(results_by_keywords, taxonomies)
-    update_non_taxonomies_count_to_show(results_by_keywords, non_taxonomies)
+    update_non_taxonomies_to_show(results_by_keywords, non_taxonomies)
 
-    update_taxonomies_to_check(results_checked, taxonomies)
-    update_non_taxonomies_to_check(results_checked, non_taxonomies)
+    update_taxonomies_to_check(taxonomies)
+    update_non_taxonomies_to_check(non_taxonomies)
 
     summary = create_results_summary(results_by_keywords)
 
@@ -195,8 +209,9 @@ def get_author_from_authors_list(authors, query):
     authors_list = list()
     authors = [author.strip() for author in authors.split(',')]
     for author in authors:
-        if query.lower() in author.lower():
+        if not query or query.lower() in author.lower():
             authors_list.append(author)
+
     return authors_list
 
 
@@ -220,7 +235,7 @@ def get_authors_by_publications(publications, search_query):
 def get_venues_by_publications(publications, search_query):
     venues_set = set()
     for i, row in publications.iterrows():
-        if search_query.lower() in row[SOURCE_TITLE].lower():
+        if not search_query or search_query.lower() in row[SOURCE_TITLE].lower():
             venues_set.add(row[SOURCE_TITLE])
     venues_data = dict()
     for i, publication in publications.iterrows():
@@ -260,8 +275,10 @@ def format_authors_to_show(df, search_query, mandatory_header, badges_columns):
             publication_data['badges'] = get_badges(publication, badges_columns)
             publication_data['hash'] = hash(publication['Title'])
             publications_list.append(publication_data)
+        publications_list = sorted(publications_list, key=lambda x: x['Year'], reverse=True)
         author_result['publications'] = publications_list
         authors_results.append(author_result)
+    authors_results = sorted(authors_results, key=lambda x: (len(x['publications']), x['name']), reverse=True)
     return authors_results
 
 
@@ -278,8 +295,10 @@ def format_venues_to_show(df, search_query, mandatory_header, badges_columns):
             publication_data['affiliations'] = get_affiliations_list(publication['Author Affiliations'])
             publication_data['badges'] = get_badges(publication, badges_columns)
             publications_list.append(publication_data)
+        publications_list = sorted(publications_list, key=lambda x: x['Year'], reverse=True)
         venue_result['publications'] = publications_list
         venues_results.append(venue_result)
+    venues_results = sorted(venues_results, key=lambda x: (len(x['publications']), x['name']), reverse=True)
     return venues_results
 
 

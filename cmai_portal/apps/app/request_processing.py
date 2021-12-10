@@ -1,5 +1,3 @@
-import ast
-
 from apps.app.data import cmai_data, countries
 from apps.app import cmai_taxonomies
 
@@ -32,6 +30,16 @@ SEARCH_TYPE_POST = 'search-type'
 SEARCH_TYPE_GET = 'search_type'
 PAGE_ID = 'page_index'
 SEARCH_QUERY = 'search_query'
+PREVIOUS_SEARCH_QUERY = 'previous_search_query'
+PREVIOUS_SEARCH_TYPE = 'previous_search_type'
+NAVIGATION_KEY = 'search_query_navigation_key:'
+TAXONOMIES_KEY = 'taxonomies_and_non_taxonomies_key:'
+TAXONOMIES, NON_TAXONOMIES = 'taxonomies', 'non_taxonomies'
+FILTER_COUNTRY = "filter_country:"
+FILTER_YEAR = "filter_year:"
+APPLY_FILTER = "apply_filter:"
+COUNTRIES_CHECK = "countries_check:"
+YEARS_CHECK = "years_check:"
 
 
 def update_taxonomy(request_post_dict, taxonomy, taxonomies):
@@ -49,15 +57,12 @@ def update_taxonomy(request_post_dict, taxonomy, taxonomies):
             if not found:
                 values[value]['checked'] = False
 
-        # if "operator:"+filter_taxonomy['name'] in request_post_dict:
-        #     filter_taxonomy['operator'] = True
-
 
 def update_year(request_post_dict, non_taxonomies):
     tax_years = non_taxonomies['years']
     filter_years = list()
     for k, v in request_post_dict.items():
-        if k.startswith("years_check:"):
+        if k.startswith(YEARS_CHECK):
             filter_years.append(int(k.split(':')[1]))
     for year, year_data in tax_years['values']:
         if year not in filter_years:
@@ -70,7 +75,7 @@ def update_country(request_post_dict, non_taxonomies):
     tax_countries = non_taxonomies['years']
     filter_countries = list()
     for k, v in request_post_dict.items():
-        if k.startswith("countries_check:"):
+        if k.startswith(COUNTRIES_CHECK):
             filter_countries.append(int(k.split(':')[1]))
     for country, country_data in tax_countries['values']:
         if country not in filter_countries:
@@ -81,22 +86,21 @@ def update_country(request_post_dict, non_taxonomies):
 
 def update_taxonomies(request, search_query, search_type):
     request_post_dict = request.POST.dict()
-    key = 'taxonomies_and_non_taxonomies_data' + search_query.lower() + search_type.lower()
+    key = TAXONOMIES_KEY + search_query.lower() + search_type.lower()
     assert key in request.session
     data = request.session[key]
     taxonomies, non_taxonomies = data['taxonomies'], data['non_taxonomies']
     for k, v in request_post_dict.items():
-        if k.startswith("apply_filter"):
+        if k.startswith(APPLY_FILTER):
             taxonomy = k.split(":")[1]
             update_taxonomy(request_post_dict, taxonomy, taxonomies)
             break
-        elif k.startswith("filter_year"):
+        elif k.startswith(FILTER_YEAR):
             update_year(request_post_dict, non_taxonomies)
             break
-        elif k.startswith("filter_country"):
+        elif k.startswith(FILTER_COUNTRY):
             update_country(request_post_dict, non_taxonomies)
             break
-    # initialise_count(taxonomies, non_taxonomies)
     return taxonomies, non_taxonomies
 
 
@@ -114,24 +118,12 @@ def initialise_taxonomies(request, search_query, search_type):
             "count": 0
         },
     }
-    tax_key = 'taxonomies_and_non_taxonomies_data' + search_query.lower() + search_type.lower()
+    tax_key = TAXONOMIES_KEY + search_query.lower() + search_type.lower()
     request.session[tax_key] = {
-        "taxonomies": taxonomies,
-        "non_taxonomies": non_taxonomies
+        TAXONOMIES: taxonomies,
+        NON_TAXONOMIES: non_taxonomies
     }
     return taxonomies, non_taxonomies
-
-
-def initialise_count(all_taxonomies, non_taxonomies):
-    for taxonomy_type, taxonomies in all_taxonomies.items():
-        for taxonomy in taxonomies:
-            taxonomy['count'] = 0
-            for _, values in taxonomy['values'].items():
-                values['count'] = 0
-
-    for taxonomy_type, values in non_taxonomies.items():
-        for value, data in values.items():
-            data['values']['count'] = 0
 
 
 def get_taxonomies_based_on_request(request, search_query, search_type):
@@ -148,13 +140,26 @@ def get_taxonomies_based_on_request(request, search_query, search_type):
     return taxonomies, non_taxonomies
 
 
+def clear_session_query_data(session_data):
+    for key in list(session_data.keys()):
+        if key.startswith(NAVIGATION_KEY) or key.startswith(TAXONOMIES_KEY):
+            session_data.pop(key)
+
+
 def process_request_parameters(request):
     request_post_dict = request.POST.dict()
     request_get_dict = request.GET.dict()
     if SEARCH_BOX in request_post_dict:
         search_query = request_post_dict[SEARCH_BOX]
-    else:
+        clear_session_query_data(request.session)
+    elif SEARCH_QUERY in request_get_dict:
         search_query = request_get_dict[SEARCH_QUERY]
+    elif PREVIOUS_SEARCH_QUERY in request.session:
+        search_query = request.session.get(PREVIOUS_SEARCH_QUERY)
+    else:
+        search_query = ""
+    request.session[PREVIOUS_SEARCH_QUERY] = search_query
+
     searchForTypes = list()
     for searchForType in searchFor:
         for key, value in request_post_dict.items():
@@ -165,8 +170,13 @@ def process_request_parameters(request):
         search_type = request_post_dict[SEARCH_TYPE_POST]
         if search_type == "Journals & Conferences":
             search_type = "Venues"
-    else:
+    elif SEARCH_TYPE_GET in request_get_dict:
         search_type = request_get_dict[SEARCH_TYPE_GET]
+    elif PREVIOUS_SEARCH_TYPE in request.session:
+        search_type = request.session.get(PREVIOUS_SEARCH_TYPE)
+    else:
+        search_type = "Publications"
+    request.session[PREVIOUS_SEARCH_TYPE] = search_type
 
     page_index = request_get_dict[PAGE_ID] if PAGE_ID in request_get_dict else 0
 
