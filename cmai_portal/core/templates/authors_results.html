@@ -26,26 +26,16 @@
               <div class="row">
                       {% include 'sidebar.html' with form=form summary=summary countries="true" %}
                 <div class="col" id="main">
+                   {% if search_query|length %}
                     <h1> Authors Results for "{{search_query}}"</h1>
+                    {% else %}
+                    <h1> All Authors </h1>
+                    {% endif %}
                     {% include 'authors_results_data.html' with authors=results total_records=total_records search_query=search_query search_type=search_type %}
                 </div>
               </div>
             </div><!-- Page content wrapper-->
             {% include 'pagination_nav.html' with current=current start=start first=first last=last previous=previous pages=pages st=search_type %}
-<!--            <nav aria-label="...">-->
-<!--              <ul class="pagination justify-content-center">-->
-<!--                <li class="page-item {% if current == first %} disabled {% endif %}">-->
-<!--                  <a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=previous search_type='Authors'%}">Previous</a>-->
-<!--                </li>-->
-<!--                  {% for page in pages %}-->
-<!--                        <li class="page-item {% if page == current %} active {% endif %}"><a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=page search_type='Authors' %}">{{page}}</a></li>-->
-<!--                  {% endfor %}-->
-<!--                <li class="page-item {% if current == last %} disabled {% endif %}">-->
-<!--                  <a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=next search_type='Authors' %}">Next</a>-->
-<!--                </li>-->
-<!--              </ul>-->
-<!--            </nav>-->
-        <!-- Bootstrap core JS-->
         </section>
     </main>
 

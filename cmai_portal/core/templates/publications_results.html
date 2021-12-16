@@ -19,9 +19,6 @@
               <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name='search-box'>
               <button class="btn btn btn-outline-success" type="submit">Search</button>
             </form>
-<!--              {% if user.is_authenticated %}-->
-<!--                <a href="{% url 'logout' %}?next={% url 'login' %}"><button class="btn btn btn-outline-success">Logout</button></a>-->
-<!--              {% endif %}-->
           </div>
         </nav>
         <section class="section-header">
@@ -31,28 +28,16 @@
                       {% include 'sidebar.html' with form=form summary=summary search_query=search_query search_type=search_type %}
 
                 <div class="col" id="main">
-                  <h1> Publications Results for "{{search_query}}"</h1>
+                   {% if search_query|length %}
+                    <h1> Publications Results for "{{search_query}}"</h1>
+                    {% else %}
+                    <h1> All Publications </h1>
+                    {% endif %}
                   {% include 'publications_results_table.html' with publications=results total_records=total_records start=start end=end %}
                 </div>
                   {% include 'pagination_nav.html' with current=current start=start first=first last=last previous=previous pages=pages st=search_type %}
-<!--                <nav aria-label="...">-->
-<!--                  <ul class="pagination justify-content-center">-->
-<!--                    <li class="page-item {% if current == first %} disabled {% endif %}">-->
-<!--                      <a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=previous search_type='Publications' %}">Previous</a>-->
-<!--                    </li>-->
-<!--                      {% for page in pages %}-->
-<!--                            <li class="page-item {% if page == current %} active {% endif %}"><a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=page search_type='Publications' %}">{{page}}</a></li>-->
-<!--                      {% endfor %}-->
-<!--                    <li class="page-item {% if current == last %} disabled {% endif %}">-->
-<!--                      <a class="page-link" href="{% url 'search_results' %}{% urlparams query=search_query page_index=next search_type='Publications' %}">Next</a>-->
-<!--                    </li>-->
-<!--                  </ul>-->
-<!--                </nav>-->
               </div>
             </div>
-<!--            </form>-->
-            <!-- Page content wrapper-->
-        <!-- Bootstrap core JS-->
         </section>
     </main>
 

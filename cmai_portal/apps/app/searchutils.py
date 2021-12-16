@@ -224,7 +224,7 @@ def get_authors_by_publications(publications, search_query):
     for i, publication in publications.iterrows():
         record = publication
         for author in author_set:
-            if author in record['Authors']:
+            if author in [author_.strip() for author_ in record['Authors'].split(',')]:
                 if author in authors_data:
                     authors_data[author].append(record)
                 else:

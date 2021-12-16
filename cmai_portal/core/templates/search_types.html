@@ -3,10 +3,10 @@
         {% for search_type in search_types %}
             {% if search_type == "Publications" %}
                 <input id="{{search_type}}" class="form-check-input"
-                       type="radio" value="{{search_type}}" name="search-type" checked>
+                       type="radio" value="{{search_type}}" name="search-type" checked onchange="change_placeholder()">
             {% else %}
                 <input id="{{search_type}}" class="form-check-input"
-                       type="radio" value="{{search_type}}" name="search-type">
+                       type="radio" value="{{search_type}}" name="search-type" onchange="change_placeholder()">
             {% endif %}
             <label class="form-check-label" for="{{search_type}}" style=" padding:0px;">
                 {{search_type}}
@@ -14,3 +14,15 @@
         {% endfor %}
     </fieldset>
 </div>
+<script language="JavaScript">
+function change_placeholder(){
+    var search_types = document.getElementsByName('search-type')
+    var search_box = document.getElementsByName('search-box')[0]
+    for(var i = 0; i < search_types.length; i++){
+        var search_type = search_types[i]
+        if(search_type.checked){
+            search_box.placeholder = "Search for " + search_type.value
+        }
+    }
+}
+</script>

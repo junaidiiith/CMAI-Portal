@@ -28,7 +28,11 @@
                       {% include 'sidebar.html' with form=form summary=summary %}
 
                 <div class="col" id="main">
+                    {% if search_query|length %}
                     <h1> Venue Results for "{{search_query}}"</h1>
+                    {% else %}
+                    <h1> All Venues </h1>
+                    {% endif %}
                     {% include 'venue_results_data.html' with venues=results total_records=total_records search_query=search_query search_type=search_type %}
                 </div>
               </div>
