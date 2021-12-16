@@ -27,3 +27,7 @@ staticfiles/*
 .vscode/symbols.json
 
 node_modules
+
+cmai_survey_file.xlsx
+Countries_count.xlsx
+data_for_survery.csv
