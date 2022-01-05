@@ -17,7 +17,7 @@
                                     {% for publication in publications %}
                                         <tr>
                                             <td scope="col" id="{{publication.index}}">{{publication.index}}</td>
-                                            <td scope="col" id="{{publication.Title}}"><a href="{{publication.DOI}}"><strong>{{publication.Title}}</strong></a></td>
+                                            <td scope="col" id="{{publication.Title}}">{% if publication.DOI %}<a href="{{publication.DOI}}"><strong>{{publication.Title}}</strong></a>{% endif %}</td>
                                             <td scope="col" id="{{publication.Year}}">{{publication.Year}}</td>
                                             <td scope="col" id="{{publication.Authors}}">{{publication.Authors}}</td>
                                             <td scope="col" id="{{publication.Abstract}}">
