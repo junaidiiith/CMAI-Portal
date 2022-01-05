@@ -11,7 +11,7 @@ urlpatterns = [
     # The home page
     path('', views.landing, name='landing'),
     path('cmai', views.index, name='home'),
-    path('search', views.search_results, name='search_results'),
+    path('cmai/search', views.search_results, name='search_results'),
     # Matches any html file
     # re_path(r'^.*\.*', views.pages, name='pages'),
 ]

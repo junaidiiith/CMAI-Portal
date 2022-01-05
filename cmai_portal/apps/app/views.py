@@ -112,11 +112,19 @@ def index(request):
 @login_required(login_url="/login/")
 def landing(request):
     context = {}
-    if request.user.is_authenticated and request.user.is_superuser:
-        html_template = loader.get_template('landing.html')
-        return HttpResponse(html_template.render(context, request))
-    else:
+    try:
+        if request.user.is_authenticated and request.user.is_superuser:
+            html_template = loader.get_template('landing.html')
+            return HttpResponse(html_template.render(context, request))
+        else:
+            html_template = loader.get_template('page-404.html')
+            return HttpResponse(html_template.render(context, request))
+    except template.TemplateDoesNotExist:
+
         html_template = loader.get_template('page-404.html')
+        return HttpResponse(html_template.render(context, request))
+    except:
+        html_template = loader.get_template('page-500.html')
         return HttpResponse(html_template.render(context, request))
 
 
