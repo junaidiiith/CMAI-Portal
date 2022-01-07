@@ -56,6 +56,8 @@ def update_taxonomy(request_post_dict, taxonomy, taxonomies):
                     found = True
             if not found:
                 values[value]['checked'] = False
+            else:
+                values[value]['checked'] = True
 
 
 def update_year(request_post_dict, non_taxonomies):

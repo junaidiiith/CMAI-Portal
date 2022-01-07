@@ -11,13 +11,12 @@ data_file = "cmai_survey_file.xlsx"
 countries_file = "Countries_count.xlsx"
 cmai_data = pd.read_excel(data_file)
 countries = pd.read_excel(countries_file)
-
+log_file = open("requests_data.log", 'a')
 d = dict()
-d['UML & UML Diagram Type & UML Profile'] = ['UML', 'UML Profile', 'Class Diagram', 'State Machine Diagram',
-                                             'Activity Diagram', 'Object Diagram', 'Use Case Diagram',
-                                             'State Diagram',
-                                             'Sequence Diagram', 'State Chart Diagram']
+d['UML & UML Diagram Type'] = ['UML', 'Class Diagram', 'State Machine Diagram', 'Activity Diagram', 'Object Diagram',
+                               'Use Case Diagram', 'State Diagram', 'Sequence Diagram', 'State Chart Diagram']
 d['Petri Nets'] = ['Petri Net', 'Fuzzy Petri Net', 'Petri Net extension']
+d['UML Profile'] = ['UML Profile']
 d['Entity Relationship'] = ['Entity Relationship Diagram', 'EER']
 d['Goal Model & iStar'] = ['Goal Model', 'iStar']
 d['SysML'] = ['SysML', 'SysML Profile']

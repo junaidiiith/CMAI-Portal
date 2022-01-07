@@ -2,7 +2,7 @@
 
 <li class="mb-1">
     {% for taxonomy in taxonomies %}
-        <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#{{taxonomy.id}}-collapse" aria-expanded="false">
+        <button class="btn btn-toggle align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#{{taxonomy.id}}-collapse" aria-expanded="false" onclick="selectAllCheck('{{taxonomy.name}}')">
             {{taxonomy.name}} <span class="badge bg-secondary">{{taxonomy.count}}</span>
         </button>
         <div class="collapse" id="{{taxonomy.id}}-collapse">
@@ -30,15 +30,6 @@
                         </label>
                     </div>
                 </li>
-<!--                <li>-->
-<!--                    <div class="form-check form-switch">-->
-<!--                        <input name="operator:{{taxonomy.name}}" class="form-check-input" type="checkbox" id="{{taxonomy.operator.0}}" {% if taxonomy.operator.1 %} checked {% endif %}>-->
-<!--                        <label class="form-check-label" for="{{taxonomy.operator.0}}">AND/OR results with other taxonomies</label>-->
-<!--                    </div>-->
-<!--                </li>-->
-<!--                <li>-->
-<!--                    <h6><small class="text-muted">Default (Match with AND operator) </small></h6>-->
-<!--                </li>-->
                 <li>
                     <button class="btn btn-sm btn-primary" type="submit" name="apply_filter:{{taxonomy.name}}">Apply Filters</button>
                 </li>
@@ -48,6 +39,26 @@
     {% endfor %}
 </li>
 <script language="JavaScript">
+function selectAllCheck(taxonomyName){
+    console.log("Let's try to check all the boxes")
+    checkboxes = document.querySelectorAll('input[name^="'+ taxonomyName +'"]');
+    var allSelected = true;
+    for(var i=0, n=checkboxes.length;i<n;i++) {
+        if(!checkboxes[i].checked){
+            allSelected = false;
+            break;
+        }
+    }
+    checkbox = document.getElementsByName('all:'+taxonomyName)[0];
+    if(allSelected){
+        checkbox.checked = true;
+        console.log("Checked all the boxes");
+    }
+    else{
+        checkbox.checked = false;
+        console.log("Not all the boxes checked");
+    }
+}
 function toggle(source, taxonomyName) {
   checkboxes = document.querySelectorAll('input[name^="'+ taxonomyName +'"]');
   for(var i=0, n=checkboxes.length;i<n;i++) {

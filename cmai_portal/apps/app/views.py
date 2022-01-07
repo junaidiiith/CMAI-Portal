@@ -2,6 +2,9 @@
 """
 Copyright (c) 2019 - present AppSeed.us
 """
+import time
+from datetime import datetime
+
 from django import template
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
@@ -11,6 +14,8 @@ from apps.app.searchapi import *
 from apps.app.forms import CompleteForm
 from apps.app.request_processing import process_request_parameters, searchFor, \
     get_taxonomies_based_on_request, NAVIGATION_KEY, TAXONOMIES_KEY, TAXONOMIES, NON_TAXONOMIES
+from apps.app.data import log_file
+from apps.app.ip_info import get_visitor_ip_address
 
 results_template_map = {
     "Publications": "publications_results.html",
@@ -103,6 +108,9 @@ def search_results(request):
 
 @login_required(login_url="/login/")
 def index(request):
+    visitor_ip = get_visitor_ip_address(request)
+    print("Visited by: " + visitor_ip + " at: " + str(datetime.now())+"\n")
+    log_file.write("Visited by: " + visitor_ip + "at: " + str(time.time())+"\n")
     if request.user.is_authenticated:
         context = {"search_types": searchFor}
         html_template = loader.get_template('home.html')
